@@ -1,7 +1,16 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Activity, ArrowLeft, Flame, Mail, ShieldAlert, UserRoundCheck } from "lucide-react";
 import { getSupabaseAdmin, type PracticeLead } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  title: "Admin Leads",
+  robots: {
+    index: false,
+    follow: false
+  }
+};
 
 function scoreColor(score: number) {
   if (score >= 80) return "text-clinic";
