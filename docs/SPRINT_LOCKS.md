@@ -7,7 +7,7 @@ This file is the product build contract. Once a sprint is marked locked, its sco
 | Sprint 0 | Production foundation, repository structure, design tokens, metadata, app shell | Locked | Only critical build break fixes allowed |
 | Sprint 1 | Homepage narrative, navigation, initial Aleph visual language, core conversion flow | Locked | No copy/design rewrites without explicit reopen |
 | Sprint 2 | Diagnostic engine, scoring model, report route | Locked | Backend connection only in Sprint 3 |
-| Sprint 3 | Lead capture, Supabase schema, admin lead dashboard | Not started | Pending Sprint 2 lock |
+| Sprint 3 | Lead capture, Supabase schema, admin lead dashboard | Locked | Email automation/status editing only in later sprints |
 | Sprint 4 | Solution pages, clinician segment pages, pricing architecture | Not started | Pending Sprint 3 lock |
 | Sprint 5 | Email/report automation, resources, analytics events | Not started | Pending Sprint 4 lock |
 | Sprint 6 | SEO, performance, accessibility, deployment hardening | Not started | Pending Sprint 5 lock |
@@ -28,3 +28,11 @@ This file is the product build contract. Once a sprint is marked locked, its sco
 - Diagnostic route: `/diagnostic`.
 - Seven decision signals produce a five-dimension practice growth scorecard.
 - Report screen identifies weakest area and recommends Aleph package fit.
+
+## Sprint 3 Locked Baseline
+
+- Lead API route: `/api/leads`.
+- Admin login route: `/admin/login`.
+- Admin leads dashboard: `/admin/leads`.
+- Database migration: `supabase/migrations/001_practice_leads.sql`.
+- Environment contract: `.env.example`.
