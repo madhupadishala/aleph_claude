@@ -2,7 +2,8 @@
 
 import { type FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardCheck, LineChart, Mail, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardCheck, Download, LineChart, Mail, RotateCcw, Sparkles } from "lucide-react";
+import { trackAlephEvent } from "@/lib/analytics/events";
 
 type Dimension = "visibility" | "trust" | "pricing" | "retention" | "authority";
 
@@ -181,6 +182,8 @@ export default function DiagnosticPage() {
 
     if (step < questions.length - 1) {
       setStep(step + 1);
+    } else {
+      trackAlephEvent("diagnostic_completed", { questions: questions.length });
     }
   }
 
@@ -192,6 +195,37 @@ export default function DiagnosticPage() {
     setEmail("");
     setSubmitState("idle");
     setSubmitMessage("");
+  }
+
+  function downloadReport() {
+    const lines = [
+      "Aleph Practice Growth Report",
+      "",
+      `Overall readiness: ${scores.overall}%`,
+      `Best package fit: ${scores.fit.name}`,
+      `Primary growth leak: ${scores.weakest.label}`,
+      "",
+      "Scorecard",
+      ...scores.normalized.map((item) => `- ${item.label}: ${item.score}%`),
+      "",
+      "30-day focus",
+      "1. Fix discovery: Google profile, services, area signals, and appointment path.",
+      "2. Build trust: clinician story, FAQs, proof, service pages, and patient objections.",
+      "3. Package pricing, patient education, follow-up rhythm, and conversion tracking."
+    ];
+
+    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "aleph-practice-growth-report.txt";
+    anchor.click();
+    URL.revokeObjectURL(url);
+    trackAlephEvent("report_downloaded", {
+      overall_score: scores.overall,
+      weakest_area: scores.weakest.label,
+      package_fit: scores.fit.name
+    });
   }
 
   async function saveLead(event: FormEvent<HTMLFormElement>) {
@@ -224,11 +258,18 @@ export default function DiagnosticPage() {
     if (!response.ok) {
       setSubmitState("error");
       setSubmitMessage(result.error || "Unable to save report.");
+      trackAlephEvent("lead_save_failed", { reason: result.error || "unknown" });
       return;
     }
 
     setSubmitState("saved");
-    setSubmitMessage("Report saved. Aleph can now follow up with the right growth plan.");
+    setSubmitMessage(result.emailSent ? "Report saved and email queued." : "Report saved. Email automation will activate after Resend keys are configured.");
+    trackAlephEvent("lead_saved", {
+      overall_score: scores.overall,
+      weakest_area: scores.weakest.label,
+      package_fit: scores.fit.name,
+      email_sent: Boolean(result.emailSent)
+    });
   }
 
   if (isComplete) {
@@ -317,6 +358,9 @@ export default function DiagnosticPage() {
 
           <button onClick={reset} className="mt-8 inline-flex items-center gap-2 rounded-full border border-line bg-white px-5 py-3 text-sm font-black text-forest">
             <RotateCcw size={16} /> Retake diagnostic
+          </button>
+          <button onClick={downloadReport} className="ml-3 mt-8 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-3 text-sm font-black text-forest">
+            <Download size={16} /> Download report
           </button>
         </div>
       </main>
