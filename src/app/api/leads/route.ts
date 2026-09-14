@@ -36,10 +36,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Clinical specialty is required." }, { status: 400 });
     }
 
+    const email = payload.email.trim().toLowerCase();
+    const specialty = payload.specialty.trim();
+
     const lead: PracticeLead = {
       name: payload.name?.trim() || null,
-      email: payload.email.trim().toLowerCase(),
-      specialty: payload.specialty.trim(),
+      email,
+      specialty,
       overall_score: readScore(payload, "overall_score"),
       visibility_score: readScore(payload, "visibility_score"),
       trust_score: readScore(payload, "trust_score"),
