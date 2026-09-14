@@ -10,7 +10,7 @@ const scoreKeys = [
   "authority_score"
 ] as const;
 
-function isEmail(value: unknown) {
+function isEmail(value: unknown): value is string {
   return typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
@@ -27,17 +27,19 @@ function readScore(payload: Partial<PracticeLead>, key: (typeof scoreKeys)[numbe
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as Partial<PracticeLead>;
+    const emailInput = payload.email;
+    const specialtyInput = payload.specialty;
 
-    if (!isEmail(payload.email)) {
+    if (!isEmail(emailInput)) {
       return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
     }
 
-    if (!payload.specialty || payload.specialty.trim().length < 2) {
+    if (typeof specialtyInput !== "string" || specialtyInput.trim().length < 2) {
       return NextResponse.json({ error: "Clinical specialty is required." }, { status: 400 });
     }
 
-    const email = payload.email.trim().toLowerCase();
-    const specialty = payload.specialty.trim();
+    const email = emailInput.trim().toLowerCase();
+    const specialty = specialtyInput.trim();
 
     const lead: PracticeLead = {
       name: payload.name?.trim() || null,
