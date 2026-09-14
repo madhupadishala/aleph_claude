@@ -1,6 +1,13 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { packages } from "@/lib/aleph/commercial";
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description: "Outcome-based Aleph packages for clinicians building visibility, patient trust, confident pricing, and steady footfall.",
+  alternates: { canonical: "/pricing" }
+};
 
 export default function PricingPage() {
   return (
