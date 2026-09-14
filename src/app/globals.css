@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { --background: #fbf8f1; --foreground: #18231f; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { min-height: 100vh; background: var(--background); color: var(--foreground); font-family: var(--font-sans), Arial, sans-serif; }
+::selection { background: #c59a3d; color: #123629; }
+.focus-ring { @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold; }
