@@ -1,10 +1,26 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, CircleAlert } from "lucide-react";
 import { segments } from "@/lib/aleph/commercial";
 
 export function generateStaticParams() {
   return segments.map((segment) => ({ segment: segment.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ segment: string }> }): Promise<Metadata> {
+  const { segment: slug } = await params;
+  const segment = segments.find((item) => item.slug === slug);
+
+  if (!segment) {
+    return {};
+  }
+
+  return {
+    title: `Aleph for ${segment.label}`,
+    description: segment.summary,
+    alternates: { canonical: `/for/${segment.slug}` }
+  };
 }
 
 export default async function SegmentPage({ params }: { params: Promise<{ segment: string }> }) {
