@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardCheck, LineChart, Mail, RotateCcw, Sparkles } from "lucide-react";
 
@@ -194,7 +194,7 @@ export default function DiagnosticPage() {
     setSubmitMessage("");
   }
 
-  async function saveLead(event: React.FormEvent<HTMLFormElement>) {
+  async function saveLead(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitState("saving");
     setSubmitMessage("");
