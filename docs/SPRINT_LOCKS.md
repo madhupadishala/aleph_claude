@@ -6,7 +6,7 @@ This file is the product build contract. Once a sprint is marked locked, its sco
 |---|---|---|---|
 | Sprint 0 | Production foundation, repository structure, design tokens, metadata, app shell | Locked | Only critical build break fixes allowed |
 | Sprint 1 | Homepage narrative, navigation, initial Aleph visual language, core conversion flow | Locked | No copy/design rewrites without explicit reopen |
-| Sprint 2 | Diagnostic engine, scoring model, report route | Not started | Pending approval |
+| Sprint 2 | Diagnostic engine, scoring model, report route | Locked | Backend connection only in Sprint 3 |
 | Sprint 3 | Lead capture, Supabase schema, admin lead dashboard | Not started | Pending Sprint 2 lock |
 | Sprint 4 | Solution pages, clinician segment pages, pricing architecture | Not started | Pending Sprint 3 lock |
 | Sprint 5 | Email/report automation, resources, analytics events | Not started | Pending Sprint 4 lock |
@@ -22,3 +22,9 @@ This file is the product build contract. Once a sprint is marked locked, its sco
 ## Verification
 
 - GitHub Actions build check added after Sprint 1 lock to run install, typecheck, and production build on every push.
+
+## Sprint 2 Locked Baseline
+
+- Diagnostic route: `/diagnostic`.
+- Seven decision signals produce a five-dimension practice growth scorecard.
+- Report screen identifies weakest area and recommends Aleph package fit.
