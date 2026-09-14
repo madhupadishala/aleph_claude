@@ -18,3 +18,7 @@ This file is the product build contract. Once a sprint is marked locked, its sco
 - Positioning: Practice Growth Intelligence for independent clinicians.
 - Visual direction: clinical green, ivory, gold, terracotta accents.
 - Homepage flow: hero, pain mirror, diagnostic CTA, Aleph method, solutions, pricing placeholder, footer.
+
+## Verification
+
+- GitHub Actions build check added after Sprint 1 lock to run install, typecheck, and production build on every push.
