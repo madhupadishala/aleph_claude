@@ -9,7 +9,7 @@ This file is the product build contract. Once a sprint is marked locked, its sco
 | Sprint 2 | Diagnostic engine, scoring model, report route | Locked | Backend connection only in Sprint 3 |
 | Sprint 3 | Lead capture, Supabase schema, admin lead dashboard | Locked | Email automation/status editing only in later sprints |
 | Sprint 4 | Solution pages, clinician segment pages, pricing architecture | Locked | Analytics/compliance copy only in later sprints |
-| Sprint 5 | Email/report automation, resources, analytics events | Not started | Pending Sprint 4 lock |
+| Sprint 5 | Email/report automation, resources, analytics events | Locked | Production QA/domain work only in Sprint 6 |
 | Sprint 6 | SEO, performance, accessibility, deployment hardening | Not started | Pending Sprint 5 lock |
 
 ## Current Locked Baseline
@@ -43,3 +43,12 @@ This file is the product build contract. Once a sprint is marked locked, its sco
 - Segment routes: `/for/doctors`, `/for/therapists`, `/for/clinics`.
 - Pricing route: `/pricing`.
 - Package architecture: Starter, Growth, Authority, Concierge.
+
+
+## Sprint 5 Locked Baseline
+
+- Resource vault route: `/resources`.
+- Report generator: `src/lib/aleph/report.ts`.
+- Optional Resend sender: `src/lib/email/resend.ts`.
+- Analytics helper: `src/lib/analytics/events.ts`.
+- Diagnostic report download and lead-save tracking are active.
