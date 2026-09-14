@@ -26,8 +26,8 @@ export default function Home() {
       <header className="sticky top-0 z-50 border-b border-line/80 bg-ivory/90 backdrop-blur-xl">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
           <Logo />
-          <div className="hidden items-center gap-8 text-sm font-semibold text-forest/75 md:flex"><a href="#diagnostic" className="hover:text-forest">Diagnostic</a><a href="#method" className="hover:text-forest">Method</a><a href="#solutions" className="hover:text-forest">Solutions</a><a href="#pricing" className="hover:text-forest">Pricing</a></div>
-          <a href="#diagnostic" className="focus-ring inline-flex min-h-12 items-center rounded-full bg-terracotta px-5 text-sm font-bold text-white shadow-soft transition hover:brightness-95">Start Growth Audit</a>
+          <div className="hidden items-center gap-8 text-sm font-semibold text-forest/75 md:flex"><a href="#diagnostic" className="hover:text-forest">Diagnostic</a><a href="#method" className="hover:text-forest">Method</a><a href="/solutions" className="hover:text-forest">Solutions</a><a href="/for/doctors" className="hover:text-forest">For Doctors</a><a href="/pricing" className="hover:text-forest">Pricing</a></div>
+          <a href="/diagnostic" className="focus-ring inline-flex min-h-12 items-center rounded-full bg-terracotta px-5 text-sm font-bold text-white shadow-soft transition hover:brightness-95">Start Growth Audit</a>
         </nav>
       </header>
       <section className="relative"><div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(197,154,61,0.22),transparent_32%),radial-gradient(circle_at_80%_10%,rgba(15,118,110,0.16),transparent_28%)]" /><div className="relative mx-auto grid max-w-7xl gap-12 px-5 py-20 lg:grid-cols-[1.05fr_0.95fr] lg:py-28">
