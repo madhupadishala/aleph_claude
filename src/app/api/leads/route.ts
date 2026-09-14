@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin, type PracticeLead } from "@/lib/supabase/server";
 
-const dimensions = [
+const scoreKeys = [
   "overall_score",
   "visibility_score",
   "trust_score",
@@ -12,6 +12,16 @@ const dimensions = [
 
 function isEmail(value: unknown) {
   return typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function readScore(payload: Partial<PracticeLead>, key: (typeof scoreKeys)[number]) {
+  const value = payload[key];
+
+  if (typeof value !== "number" || value < 0 || value > 100) {
+    throw new Error(key + " must be a score between 0 and 100.");
+  }
+
+  return value;
 }
 
 export async function POST(request: Request) {
@@ -26,31 +36,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Clinical specialty is required." }, { status: 400 });
     }
 
-    for (const key of dimensions) {
-      if (typeof payload[key] !== "number" || payload[key]! < 0 || payload[key]! > 100) {
-        return NextResponse.json({ error: key + " must be a score between 0 and 100." }, { status: 400 });
-      }
-    }
-
-    if (!payload.weakest_area || !payload.package_fit) {
-      return NextResponse.json({ error: "Diagnostic result data is incomplete." }, { status: 400 });
-    }
-
     const lead: PracticeLead = {
       name: payload.name?.trim() || null,
       email: payload.email.trim().toLowerCase(),
       specialty: payload.specialty.trim(),
-      overall_score: payload.overall_score,
-      visibility_score: payload.visibility_score,
-      trust_score: payload.trust_score,
-      pricing_score: payload.pricing_score,
-      retention_score: payload.retention_score,
-      authority_score: payload.authority_score,
-      weakest_area: payload.weakest_area,
-      package_fit: payload.package_fit,
+      overall_score: readScore(payload, "overall_score"),
+      visibility_score: readScore(payload, "visibility_score"),
+      trust_score: readScore(payload, "trust_score"),
+      pricing_score: readScore(payload, "pricing_score"),
+      retention_score: readScore(payload, "retention_score"),
+      authority_score: readScore(payload, "authority_score"),
+      weakest_area: payload.weakest_area?.trim() || "",
+      package_fit: payload.package_fit?.trim() || "",
       status: "New",
       notes: null
     };
+
+    if (!lead.weakest_area || !lead.package_fit) {
+      return NextResponse.json({ error: "Diagnostic result data is incomplete." }, { status: 400 });
+    }
 
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase.from("practice_leads").insert(lead).select("id").single();
@@ -62,6 +66,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, id: data.id });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to save lead.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message.includes("score between") ? 400 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
