@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sendPracticeReportEmail } from "@/lib/email/resend";
 import { getSupabaseAdmin, type PracticeLead } from "@/lib/supabase/server";
 
 const scoreKeys = [
@@ -68,7 +69,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, id: data.id });
+    const emailResult = await sendPracticeReportEmail(lead);
+
+    return NextResponse.json({
+      ok: true,
+      id: data.id,
+      emailSent: emailResult.sent,
+      emailSkipped: emailResult.skipped,
+      emailError: emailResult.error
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to save lead.";
     const status = message.includes("score between") ? 400 : 500;
