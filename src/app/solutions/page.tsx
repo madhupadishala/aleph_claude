@@ -1,6 +1,13 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft, ArrowRight, CheckCircle2, Layers3 } from "lucide-react";
 import { solutionPillars } from "@/lib/aleph/commercial";
+
+export const metadata: Metadata = {
+  title: "Clinician Growth Solutions",
+  description: "Aleph combines discovery, trust, conversion, and authority systems for independent clinicians and small clinics.",
+  alternates: { canonical: "/solutions" }
+};
 
 export default function SolutionsPage() {
   return (
