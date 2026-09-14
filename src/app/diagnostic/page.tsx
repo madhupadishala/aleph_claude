@@ -142,8 +142,11 @@ function percent(value: number, max: number) {
 export default function DiagnosticPage() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
+  const [name, setName] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [email, setEmail] = useState("");
+  const [submitState, setSubmitState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [submitMessage, setSubmitMessage] = useState("");
 
   const isComplete = answers.length === questions.length;
   const activeQuestion = questions[step];
@@ -184,8 +187,48 @@ export default function DiagnosticPage() {
   function reset() {
     setStep(0);
     setAnswers([]);
+    setName("");
     setSpecialty("");
     setEmail("");
+    setSubmitState("idle");
+    setSubmitMessage("");
+  }
+
+  async function saveLead(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitState("saving");
+    setSubmitMessage("");
+
+    const scoreMap = Object.fromEntries(scores.normalized.map((item) => [item.key, item.score])) as Record<Dimension, number>;
+
+    const response = await fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        email,
+        specialty,
+        overall_score: scores.overall,
+        visibility_score: scoreMap.visibility,
+        trust_score: scoreMap.trust,
+        pricing_score: scoreMap.pricing,
+        retention_score: scoreMap.retention,
+        authority_score: scoreMap.authority,
+        weakest_area: scores.weakest.label,
+        package_fit: scores.fit.name
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      setSubmitState("error");
+      setSubmitMessage(result.error || "Unable to save report.");
+      return;
+    }
+
+    setSubmitState("saved");
+    setSubmitMessage("Report saved. Aleph can now follow up with the right growth plan.");
   }
 
   if (isComplete) {
@@ -255,17 +298,20 @@ export default function DiagnosticPage() {
               </div>
             </div>
 
-            <form className="rounded-aleph border border-line bg-mist p-7 shadow-soft">
+            <form onSubmit={saveLead} className="rounded-aleph border border-line bg-mist p-7 shadow-soft">
               <div className="flex items-center gap-3">
                 <Mail className="text-terracotta" size={26} />
                 <h2 className="text-2xl font-black">Save this report</h2>
               </div>
-              <p className="mt-3 leading-7 text-forest/70">Sprint 3 will connect this form to Supabase and the Aleph admin dashboard.</p>
-              <label className="mt-5 block text-sm font-bold">Clinical specialty</label>
-              <input value={specialty} onChange={(event) => setSpecialty(event.target.value)} className="mt-2 min-h-12 w-full rounded-xl border border-line bg-white px-4 outline-none focus:border-gold" placeholder="Physiotherapist, dentist, psychologist..." />
+              <p className="mt-3 leading-7 text-forest/70">Save this diagnostic into Aleph admin so the right growth plan can be prepared.</p>
+              <label className="mt-5 block text-sm font-bold">Name</label>
+              <input value={name} onChange={(event) => setName(event.target.value)} className="mt-2 min-h-12 w-full rounded-xl border border-line bg-white px-4 outline-none focus:border-gold" placeholder="Dr. name or clinic owner" />
+              <label className="mt-4 block text-sm font-bold">Clinical specialty</label>
+              <input value={specialty} onChange={(event) => setSpecialty(event.target.value)} className="mt-2 min-h-12 w-full rounded-xl border border-line bg-white px-4 outline-none focus:border-gold" placeholder="Physiotherapist, dentist, psychologist..." required />
               <label className="mt-4 block text-sm font-bold">Email</label>
-              <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" className="mt-2 min-h-12 w-full rounded-xl border border-line bg-white px-4 outline-none focus:border-gold" placeholder="doctor@example.com" />
-              <button type="button" className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-forest px-5 font-black text-white">Unlock saved report in Sprint 3</button>
+              <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" className="mt-2 min-h-12 w-full rounded-xl border border-line bg-white px-4 outline-none focus:border-gold" placeholder="doctor@example.com" required />
+              <button disabled={submitState === "saving" || submitState === "saved"} className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-forest px-5 font-black text-white disabled:opacity-60">{submitState === "saving" ? "Saving..." : submitState === "saved" ? "Report Saved" : "Save My Practice Growth Report"}</button>
+              {submitMessage ? <p className={"mt-3 text-sm font-bold " + (submitState === "error" ? "text-terracotta" : "text-clinic")}>{submitMessage}</p> : null}
             </form>
           </section>
 
