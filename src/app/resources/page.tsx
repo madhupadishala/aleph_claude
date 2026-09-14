@@ -1,5 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft, ArrowRight, Calculator, FileText, MapPinned, MessageSquareText } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Resource Vault",
+  description: "Practical Aleph resources for clinician visibility, pricing confidence, patient trust, and inquiry follow-up.",
+  alternates: { canonical: "/resources" }
+};
 
 const resources = [
   {
