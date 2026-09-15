@@ -11,6 +11,7 @@ This file is the product build contract. Once a sprint is marked locked, its sco
 | Sprint 4 | Solution pages, clinician segment pages, pricing architecture | Locked | Analytics/compliance copy only in later sprints |
 | Sprint 5 | Email/report automation, resources, analytics events | Locked | Production QA/domain work only in Sprint 6 |
 | Sprint 6 | SEO, performance, accessibility, deployment hardening | Locked | Release fixes and domain/env setup only |
+| Sprint 7 | Production UX, durable automation, consent, security, and approved brand restoration | Locked | No visual, copy, layout, workflow, or architecture changes without Madhu explicitly reopening the relevant scope |
 
 ## Current Locked Baseline
 
@@ -60,3 +61,23 @@ This file is the product build contract. Once a sprint is marked locked, its sco
 - Admin routes are excluded from indexing.
 - Production security headers are configured.
 - Route-level metadata is present for commercial pages.
+
+## Sprint 7 Final Visual Lock
+
+Approved by the client and locked on 15 September 2026.
+
+- Headline font: Instrument Serif.
+- Body and label font: Plus Jakarta Sans.
+- Main background — Warm Ivory: `#FBF8F1`.
+- Primary text and dark sections — Botanical Forest Green: `#123629`.
+- Progress bars and secondary accents — Clinical Teal: `#0F766E`.
+- Highlight buttons and labels — Muted Gold: `#C59A3D`.
+- Main CTA — Warm Terracotta: `#C86745`.
+- Secondary text — Natural Sage: `#8FA69A`.
+- Pale green sections — Soft Mint Mist: `#EDF4F1`.
+- Borders and dividers — Sage Grey: `#DCE6E1`.
+- Cards — Clean White: `#FFFFFF`.
+- Elevated warm surfaces — Soft White: `#FDFCF9`.
+- Current responsive layouts, content hierarchy, interactions, diagnostic experience, resource tools, and production architecture are the approved baseline.
+- Future work may fix defects, accessibility failures, security issues, or operational configuration without changing the approved appearance.
+- Any other visual change requires Madhu to explicitly reopen this lock.
