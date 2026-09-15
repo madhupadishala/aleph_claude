@@ -42,6 +42,7 @@ alter table public.email_jobs enable row level security;
 alter table public.email_events enable row level security;
 alter table public.request_limits enable row level security;
 revoke all on public.email_subscribers, public.email_jobs, public.email_events, public.request_limits from anon, authenticated;
+grant all on public.email_subscribers, public.email_jobs, public.email_events, public.request_limits to service_role;
 
 create function public.aleph_rate_limit(p_key text, p_max int, p_seconds int) returns boolean
 language plpgsql security definer set search_path = public as $$
@@ -63,7 +64,11 @@ begin
   on conflict(request_id) do nothing returning id into lead_uuid;
   if lead_uuid is null then return null; end if;
   if p_marketing then
-    insert into email_subscribers(email,consent_version) values(p_lead->>'email',p_version) on conflict(email) do nothing;
+    insert into email_subscribers(email,consent_version) values(p_lead->>'email',p_version)
+    on conflict(email) do update set consent_state='pending',token=gen_random_uuid(),consent_version=excluded.consent_version,
+      created_at=now(),confirmed_at=null,unsubscribed_at=null
+    where email_subscribers.suppressed_at is null and (email_subscribers.consent_state='unsubscribed' or
+      (email_subscribers.consent_state='pending' and email_subscribers.created_at < now()-interval '7 days'));
     select token into recipient_token from email_subscribers where email=p_lead->>'email' and consent_state='pending' and suppressed_at is null;
   end if;
   insert into email_jobs(lead_id,email,kind,payload) values(lead_uuid,p_lead->>'email','report',p_lead || jsonb_build_object('confirm_token',recipient_token));
