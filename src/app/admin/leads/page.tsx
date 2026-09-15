@@ -1,15 +1,23 @@
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/admin/session";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Activity, ArrowLeft, Flame, Mail, ShieldAlert, UserRoundCheck } from "lucide-react";
+import {
+  Activity,
+  ArrowLeft,
+  Flame,
+  Mail,
+  ShieldAlert,
+  UserRoundCheck,
+} from "lucide-react";
 import { getSupabaseAdmin, type PracticeLead } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Admin Leads",
   robots: {
     index: false,
-    follow: false
-  }
+    follow: false,
+  },
 };
 
 function scoreColor(score: number) {
@@ -19,8 +27,10 @@ function scoreColor(score: number) {
 }
 
 function leadTemperature(lead: PracticeLead) {
-  if (lead.overall_score >= 75 || lead.package_fit.includes("Authority")) return "Hot";
-  if (lead.overall_score >= 55 || lead.package_fit.includes("Growth")) return "Warm";
+  if (lead.overall_score >= 75 || lead.package_fit.includes("Authority"))
+    return "Hot";
+  if (lead.overall_score >= 55 || lead.package_fit.includes("Growth"))
+    return "Warm";
   return "Nurture";
 }
 
@@ -43,13 +53,16 @@ export default async function AdminLeadsPage() {
   const cookieStore = await cookies();
   const adminCookie = cookieStore.get("aleph_admin")?.value;
   const expected = process.env.ALEPH_ADMIN_PASSWORD;
-  const isUnlocked = expected && adminCookie === expected;
+  const isUnlocked = verifySession(adminCookie, expected);
 
   if (!isUnlocked) {
     return (
       <main className="min-h-screen bg-ivory px-5 py-10 text-forest">
         <div className="mx-auto max-w-xl rounded-aleph border border-line bg-white p-8 shadow-soft">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-forest/70 hover:text-forest">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm font-bold text-forest/70 hover:text-forest"
+          >
             <ArrowLeft size={16} /> Back to Aleph
           </Link>
           <div className="mt-8 flex items-center gap-3">
@@ -57,8 +70,15 @@ export default async function AdminLeadsPage() {
             <h1 className="font-serif text-5xl">Admin Locked</h1>
           </div>
           <p className="mt-5 leading-8 text-forest/72">
-            Add an <span className="font-bold">aleph_admin</span> cookie matching <span className="font-bold">ALEPH_ADMIN_PASSWORD</span> to view leads. Sprint 3 keeps this lightweight; full auth can be hardened later if required.
+            Sign in to securely access practice leads. Your session expires
+            after eight hours.
           </p>
+          <Link
+            href="/admin/login"
+            className="mt-6 inline-flex min-h-12 items-center rounded-lg bg-forest px-5 font-bold text-white"
+          >
+            Sign in
+          </Link>
         </div>
       </main>
     );
@@ -70,48 +90,74 @@ export default async function AdminLeadsPage() {
   try {
     leads = await getLeads();
   } catch (error) {
-    errorMessage = error instanceof Error ? error.message : "Unable to load leads.";
+    errorMessage =
+      error instanceof Error ? error.message : "Unable to load leads.";
   }
 
-  const hotCount = leads.filter((lead) => leadTemperature(lead) === "Hot").length;
-  const averageScore = leads.length ? Math.round(leads.reduce((sum, lead) => sum + lead.overall_score, 0) / leads.length) : 0;
+  const hotCount = leads.filter(
+    (lead) => leadTemperature(lead) === "Hot",
+  ).length;
+  const averageScore = leads.length
+    ? Math.round(
+        leads.reduce((sum, lead) => sum + lead.overall_score, 0) / leads.length,
+      )
+    : 0;
 
   return (
     <main className="min-h-screen bg-ivory px-5 py-10 text-forest">
       <div className="mx-auto max-w-7xl">
-        <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-forest/70 hover:text-forest">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-bold text-forest/70 hover:text-forest"
+        >
           <ArrowLeft size={16} /> Back to Aleph
         </Link>
 
         <header className="mt-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <Link href="/admin/operations" className="text-link">
+            Email operations
+          </Link>
           <div>
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-terracotta">Aleph Admin</p>
-            <h1 className="mt-3 font-serif text-5xl leading-tight md:text-6xl">Practice Leads</h1>
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-terracotta">
+              Aleph Admin
+            </p>
+            <h1 className="mt-3 font-serif text-5xl leading-tight md:text-6xl">
+              Practice Leads
+            </h1>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-forest/72">
-              Diagnostic submissions, package fit, weakest area, and follow-up temperature.
+              Diagnostic submissions, package fit, weakest area, and follow-up
+              temperature.
             </p>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="rounded-2xl border border-line bg-white p-4 text-center shadow-soft">
               <UserRoundCheck className="mx-auto text-clinic" />
               <p className="mt-2 text-2xl font-black">{leads.length}</p>
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-sage">Leads</p>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-sage">
+                Leads
+              </p>
             </div>
             <div className="rounded-2xl border border-line bg-white p-4 text-center shadow-soft">
               <Flame className="mx-auto text-terracotta" />
               <p className="mt-2 text-2xl font-black">{hotCount}</p>
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-sage">Hot</p>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-sage">
+                Hot
+              </p>
             </div>
             <div className="rounded-2xl border border-line bg-white p-4 text-center shadow-soft">
               <Activity className="mx-auto text-gold" />
               <p className="mt-2 text-2xl font-black">{averageScore}%</p>
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-sage">Avg</p>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-sage">
+                Avg
+              </p>
             </div>
           </div>
         </header>
 
         {errorMessage ? (
-          <div className="mt-8 rounded-2xl border border-terracotta/30 bg-white p-5 font-bold text-terracotta">{errorMessage}</div>
+          <div className="mt-8 rounded-2xl border border-terracotta/30 bg-white p-5 font-bold text-terracotta">
+            {errorMessage}
+          </div>
         ) : null}
 
         <section className="mt-8 overflow-hidden rounded-aleph border border-line bg-white shadow-soft">
@@ -132,22 +178,43 @@ export default async function AdminLeadsPage() {
                 {leads.map((lead) => (
                   <tr key={lead.id} className="border-t border-line align-top">
                     <td className="px-5 py-4">
-                      <p className="font-black">{lead.name || "Unnamed clinician"}</p>
-                      <a href={"mailto:" + lead.email} className="mt-1 inline-flex items-center gap-2 text-sm font-bold text-clinic">
+                      <p className="font-black">
+                        {lead.name || "Unnamed clinician"}
+                      </p>
+                      <a
+                        href={"mailto:" + lead.email}
+                        className="mt-1 inline-flex items-center gap-2 text-sm font-bold text-clinic"
+                      >
                         <Mail size={14} /> {lead.email}
                       </a>
                     </td>
                     <td className="px-5 py-4 font-bold">{lead.specialty}</td>
-                    <td className={"px-5 py-4 text-2xl font-black " + scoreColor(lead.overall_score)}>{lead.overall_score}%</td>
+                    <td
+                      className={
+                        "px-5 py-4 text-2xl font-black " +
+                        scoreColor(lead.overall_score)
+                      }
+                    >
+                      {lead.overall_score}%
+                    </td>
                     <td className="px-5 py-4">{lead.weakest_area}</td>
                     <td className="px-5 py-4 font-black">{lead.package_fit}</td>
-                    <td className="px-5 py-4"><span className="rounded-full bg-mist px-3 py-1 text-sm font-black">{leadTemperature(lead)}</span></td>
+                    <td className="px-5 py-4">
+                      <span className="rounded-full bg-mist px-3 py-1 text-sm font-black">
+                        {leadTemperature(lead)}
+                      </span>
+                    </td>
                     <td className="px-5 py-4">{lead.status}</td>
                   </tr>
                 ))}
                 {!leads.length ? (
                   <tr>
-                    <td colSpan={7} className="px-5 py-12 text-center font-bold text-forest/60">No diagnostic leads yet.</td>
+                    <td
+                      colSpan={7}
+                      className="px-5 py-12 text-center font-bold text-forest/60"
+                    >
+                      No diagnostic leads yet.
+                    </td>
                   </tr>
                 ) : null}
               </tbody>

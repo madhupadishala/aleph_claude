@@ -53,7 +53,6 @@ This file is the product build contract. Once a sprint is marked locked, its sco
 - Analytics helper: `src/lib/analytics/events.ts`.
 - Diagnostic report download and lead-save tracking are active.
 
-
 ## Sprint 6 Locked Baseline
 
 - Sitemap route: `/sitemap.xml`.

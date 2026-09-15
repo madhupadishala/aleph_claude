@@ -1,45 +1,217 @@
-import { ArrowRight, BarChart3, CalendarCheck, MapPin, ShieldCheck, Sparkles, Star } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Search,
+  HeartHandshake,
+  CircleDollarSign,
+  Timer,
+  Check,
+} from "lucide-react";
+import { packages } from "@/lib/aleph/commercial";
 
-const diagnosticAreas = ["Local visibility", "Google trust", "Pricing confidence", "Patient recall", "Brand authority"];
-
-const painCards = [
-  { title: "Empty Slots", copy: "Your calendar has space, but local patients do not know why they should choose you." },
-  { title: "Pricing Guilt", copy: "You keep fees low to avoid resistance, then pay for it through burnout and unstable income." },
-  { title: "Invisible Trust", copy: "Patients search before they book. If your digital presence is weak, your expertise stays hidden." }
+const pillars = [
+  {
+    icon: Search,
+    number: "01",
+    title: "Be found locally.",
+    copy: "Help nearby patients discover your services, understand your specialty, and find their way to your door.",
+    href: "/solutions#discovery",
+  },
+  {
+    icon: HeartHandshake,
+    number: "02",
+    title: "Build patient trust.",
+    copy: "Give your expertise a clear voice. Help people understand your care before the first appointment.",
+    href: "/solutions#trust",
+  },
+  {
+    icon: CircleDollarSign,
+    number: "03",
+    title: "Price with confidence.",
+    copy: "Build a sustainable practice with clear fees, considered follow-up, and room to do your best work.",
+    href: "/resources#calculator",
+  },
 ];
-
-const method = [
-  { label: "Discoverable", text: "Google profile, local SEO, service pages, and map presence." },
-  { label: "Trusted", text: "Doctor story, patient education, reviews, FAQs, and clear service proof." },
-  { label: "Chosen", text: "Offer structure, pricing confidence, booking flow, and follow-up system." }
-];
-
-const offers = ["Clinician personal website", "Google Business Profile strategy", "Local patient acquisition system", "Consultation pricing architecture", "Patient education content engine", "Lead capture and follow-up workflow"];
-
-function Logo() {
-  return <div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-full bg-forest text-ivory shadow-glow"><Sparkles size={18} /></div><span className="font-serif text-3xl text-forest">Aleph</span></div>;
-}
-
 export default function Home() {
   return (
-    <main className="min-h-screen overflow-hidden bg-ivory text-ink">
-      <header className="sticky top-0 z-50 border-b border-line/80 bg-ivory/90 backdrop-blur-xl">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-          <Logo />
-          <div className="hidden items-center gap-8 text-sm font-semibold text-forest/75 md:flex"><a href="#diagnostic" className="hover:text-forest">Diagnostic</a><a href="#method" className="hover:text-forest">Method</a><a href="/solutions" className="hover:text-forest">Solutions</a><a href="/for/doctors" className="hover:text-forest">For Doctors</a><a href="/pricing" className="hover:text-forest">Pricing</a></div>
-          <a href="/diagnostic" className="focus-ring inline-flex min-h-12 items-center rounded-full bg-terracotta px-5 text-sm font-bold text-white shadow-soft transition hover:brightness-95">Start Growth Audit</a>
-        </nav>
-      </header>
-      <section className="relative"><div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(197,154,61,0.22),transparent_32%),radial-gradient(circle_at_80%_10%,rgba(15,118,110,0.16),transparent_28%)]" /><div className="relative mx-auto grid max-w-7xl gap-12 px-5 py-20 lg:grid-cols-[1.05fr_0.95fr] lg:py-28">
-        <div className="flex flex-col justify-center"><span className="mb-6 w-fit rounded-full border border-gold/40 bg-white/60 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-forest">Built for independent clinicians</span><h1 className="font-serif text-5xl leading-[0.98] text-forest md:text-7xl">You built the skill. Aleph helps you build the practice.</h1><p className="mt-7 max-w-2xl text-lg leading-8 text-forest/78 md:text-xl">Aleph turns clinical expertise into patient trust, local visibility, confident pricing, and steady footfall without making healthcare feel like hard selling.</p><div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center"><a href="#diagnostic" className="focus-ring inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-forest px-7 text-base font-bold text-white shadow-soft transition hover:bg-clinic">Run the Practice Growth Diagnostic <ArrowRight size={18} /></a><span className="text-sm font-semibold text-forest/60">7 signals. 3 minutes. Clear next step.</span></div></div>
-        <div className="relative rounded-aleph border border-line bg-white p-5 shadow-soft"><div className="rounded-3xl bg-mist p-5"><div className="flex items-center justify-between rounded-2xl bg-white p-4"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-sage">Practice Readiness</p><p className="mt-1 text-3xl font-black text-forest">74%</p></div><BarChart3 className="text-clinic" size={38} /></div><div className="mt-5 grid gap-3">{diagnosticAreas.map((area, index) => { const score = 68 + index * 5; return <div key={area} className="rounded-2xl bg-white p-4"><div className="flex items-center justify-between text-sm font-bold text-forest"><span>{area}</span><span>{score}%</span></div><div className="mt-3 h-2 rounded-full bg-line"><div className="h-2 rounded-full bg-clinic" style={{ width: score + "%" }} /></div></div>; })}</div><div className="mt-5 rounded-2xl bg-forest p-5 text-white"><p className="text-sm font-bold text-gold">Highest growth leak</p><p className="mt-2 text-xl font-black">Patients cannot clearly understand why you are the right clinician before they book.</p></div></div></div>
-      </div></section>
-      <section className="border-y border-line bg-white/55 py-14"><div className="mx-auto grid max-w-7xl gap-4 px-5 md:grid-cols-3">{painCards.map((card) => <article key={card.title} className="rounded-2xl border border-line bg-ivory p-7"><h2 className="text-xl font-black text-forest">{card.title}</h2><p className="mt-3 leading-7 text-forest/70">{card.copy}</p></article>)}</div></section>
-      <section id="diagnostic" className="mx-auto max-w-7xl px-5 py-20"><div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]"><div><p className="text-sm font-black uppercase tracking-[0.18em] text-terracotta">Practice Growth Diagnostic</p><h2 className="mt-4 font-serif text-5xl leading-tight text-forest">Find where your practice is leaking growth.</h2><p className="mt-5 text-lg leading-8 text-forest/72">Aleph scores the exact points where independent clinicians lose patients: search visibility, proof of trust, pricing structure, booking clarity, and follow-up discipline.</p></div><div className="rounded-aleph border border-line bg-white p-6 shadow-soft"><div className="grid gap-4 sm:grid-cols-2">{diagnosticAreas.map((area) => <div key={area} className="flex min-h-20 items-center gap-3 rounded-2xl bg-mist p-4"><ShieldCheck className="text-clinic" size={22} /><span className="font-bold text-forest">{area}</span></div>)}<a href="/diagnostic" className="focus-ring flex min-h-20 items-center justify-center gap-2 rounded-2xl bg-gold p-4 font-black text-forest">Start full diagnostic <ArrowRight size={18} /></a></div></div></div></section>
-      <section id="method" className="bg-forest py-20 text-white"><div className="mx-auto max-w-7xl px-5"><p className="text-sm font-black uppercase tracking-[0.18em] text-gold">Aleph Method</p><h2 className="mt-4 max-w-3xl font-serif text-5xl leading-tight">Visibility to trust. Trust to footfall. Footfall to a stronger practice.</h2><div className="mt-10 grid gap-5 md:grid-cols-3">{method.map((item) => <article key={item.label} className="rounded-2xl border border-white/12 bg-white/8 p-7"><h3 className="text-2xl font-black text-gold">{item.label}</h3><p className="mt-4 leading-7 text-white/76">{item.text}</p></article>)}</div></div></section>
-      <section id="solutions" className="mx-auto max-w-7xl px-5 py-20"><div className="grid gap-10 lg:grid-cols-[1fr_1fr]"><div><p className="text-sm font-black uppercase tracking-[0.18em] text-terracotta">Solutions</p><h2 className="mt-4 font-serif text-5xl leading-tight text-forest">A complete growth system, not a basic doctor website.</h2></div><div className="grid gap-3">{offers.map((offer) => <div key={offer} className="flex items-center gap-3 rounded-2xl border border-line bg-white p-5"><Star className="text-gold" size={20} /><span className="font-bold text-forest">{offer}</span></div>)}</div></div></section>
-      <section id="pricing" className="border-y border-line bg-mist py-20"><div className="mx-auto max-w-7xl px-5"><div className="max-w-3xl"><p className="text-sm font-black uppercase tracking-[0.18em] text-terracotta">Pricing Strategy</p><h2 className="mt-4 font-serif text-5xl leading-tight text-forest">Packages will be outcome-based, not cheap template pricing.</h2><p className="mt-5 text-lg leading-8 text-forest/72">Sprint 4 will lock Aleph Starter, Growth, Authority, and Concierge with INR pricing, deliverables, and clinician-fit logic.</p></div><div className="mt-10 grid gap-5 md:grid-cols-3">{["Starter", "Growth", "Authority"].map((tier) => <article key={tier} className="rounded-2xl border border-line bg-white p-7"><h3 className="text-2xl font-black text-forest">Aleph {tier}</h3><p className="mt-4 leading-7 text-forest/70">Reserved for Sprint 4 pricing lock after diagnostic and lead workflow are stable.</p></article>)}</div></div></section>
-      <footer className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-10 text-sm text-forest/65 md:flex-row md:items-center md:justify-between"><Logo /><div className="flex flex-wrap gap-5"><span className="inline-flex items-center gap-2"><MapPin size={16} /> Built from Hyderabad for global clinicians</span><span className="inline-flex items-center gap-2"><CalendarCheck size={16} /> Strategy call ready</span></div></footer>
+    <main>
+      <section className="home-hero">
+        <Image
+          src="/images/clinician-consultation.webp"
+          alt="Illustrative scene of a clinician listening to a patient in an independent clinic"
+          fill
+          priority
+          sizes="100vw"
+          className="hero-image"
+        />
+        <div className="hero-content">
+          <p className="eyebrow">
+            <span className="status-dot" /> FOR THE INDEPENDENT CLINICIAN
+          </p>
+          <h1>
+            Aleph.
+            <br />
+            Your practice,
+            <br />
+            <em>with possibility.</em>
+          </h1>
+          <p>
+            You built the skill to care for people. Build the visibility, trust,
+            and confidence to grow your own practice.
+          </p>
+          <Link href="/diagnostic" className="button primary">
+            Find my growth plan <ArrowUpRight size={18} />
+          </Link>
+          <span className="hero-note">
+            <Timer size={15} /> 3 minutes. Seven questions. Free to explore.
+          </span>
+        </div>
+        <span className="hero-caption">
+          Built around the person behind the practice.
+        </span>
+      </section>
+      <div className="audience-strip">
+        <span>YOUR EXPERTISE. YOUR INDEPENDENCE.</span>
+        <Link href="/for/doctors">
+          Doctors <ArrowUpRight size={14} />
+        </Link>
+        <Link href="/for/therapists">
+          Therapists <ArrowUpRight size={14} />
+        </Link>
+        <Link href="/for/clinics">
+          Local clinics <ArrowUpRight size={14} />
+        </Link>
+      </div>
+      <section className="section-wrap">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">GOOD CARE DESERVES TO BE SEEN</p>
+            <h2>
+              A stronger practice.
+              <br />
+              One thoughtful step at a time.
+            </h2>
+          </div>
+          <p>
+            Empty appointment slots. Uncomfortable fee conversations. Marketing
+            that never quite feels like you. Start with what your practice needs
+            most.
+          </p>
+        </div>
+        <div className="pillar-grid">
+          {pillars.map(({ icon: Icon, ...p }) => (
+            <article key={p.number} className="pillar">
+              <div className="pillar-top">
+                <Icon size={27} />
+                <span>{p.number}</span>
+              </div>
+              <h3>{p.title}</h3>
+              <p>{p.copy}</p>
+              <Link href={p.href} className="text-link">
+                Explore the approach <ArrowRight size={17} />
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="diagnostic-band">
+        <div className="section-wrap diagnostic-grid">
+          <div>
+            <p className="eyebrow">A LITTLE CLARITY GOES A LONG WAY</p>
+            <h2>
+              Find your next
+              <br />
+              <em>best step.</em>
+            </h2>
+            <p>
+              Get a five-dimension practice scorecard and an actionable plan.
+              Your results are available immediately, with no email required to
+              view them.
+            </p>
+            <Link href="/diagnostic" className="button lime">
+              Start my free diagnostic <ArrowUpRight size={18} />
+            </Link>
+          </div>
+          <ol className="journey-list">
+            {[
+              [
+                "Tell us where you are",
+                "Seven questions about your current practice.",
+              ],
+              [
+                "See what needs attention",
+                "Visibility, trust, pricing, retention, and authority.",
+              ],
+              [
+                "Make progress your way",
+                "A checklist you can save and add to your calendar.",
+              ],
+            ].map(([title, copy], i) => (
+              <li key={title}>
+                <span>0{i + 1}</span>
+                <div>
+                  <h3>{title}</h3>
+                  <p>{copy}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+      <section className="section-wrap">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">SUPPORT THAT MEETS YOU WHERE YOU ARE</p>
+            <h2>
+              Your next chapter,
+              <br />
+              at your pace.
+            </h2>
+          </div>
+          <Link href="/pricing" className="text-link">
+            Compare all packages <ArrowRight size={18} />
+          </Link>
+        </div>
+        <div className="package-grid">
+          {packages.slice(0, 3).map((pack) => (
+            <article
+              className={"package " + (pack.featured ? "featured" : "")}
+              key={pack.name}
+            >
+              <span className="eyebrow">
+                {pack.featured ? "FOR YOUR NEXT STAGE" : "PRACTICE SUPPORT"}
+              </span>
+              <h3>{pack.name}</h3>
+              <p className="price">{pack.price}</p>
+              <p>{pack.bestFor}</p>
+              <ul>
+                {pack.deliverables.slice(0, 3).map((x) => (
+                  <li key={x}>
+                    <Check size={17} />
+                    {x}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/pricing" className="button secondary">
+                Explore package <ArrowUpRight size={17} />
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="closing-band">
+        <p className="eyebrow">BEGIN WITH CLARITY</p>
+        <h2>
+          You care for your patients.
+          <br />
+          Make space for your practice.
+        </h2>
+        <Link className="button primary" href="/diagnostic">
+          Let&apos;s find your next step <ArrowUpRight size={18} />
+        </Link>
+      </section>
     </main>
   );
 }

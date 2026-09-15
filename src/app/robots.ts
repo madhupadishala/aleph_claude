@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { siteUrl } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -6,9 +7,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/api/"]
-      }
+        disallow: ["/admin/", "/api/"],
+      },
     ],
-    sitemap: "https://aleph.theclinixai.com/sitemap.xml"
+    sitemap: `${siteUrl}/sitemap.xml`,
   };
 }

@@ -7,7 +7,9 @@ type EmailResult = {
   error?: string;
 };
 
-export async function sendPracticeReportEmail(lead: PracticeLead): Promise<EmailResult> {
+export async function sendPracticeReportEmail(
+  lead: PracticeLead,
+): Promise<EmailResult> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.ALEPH_FROM_EMAIL;
 
@@ -20,16 +22,17 @@ export async function sendPracticeReportEmail(lead: PracticeLead): Promise<Email
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
+      signal: AbortSignal.timeout(10000),
       headers: {
         Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         from,
         to: lead.email,
         subject: report.subject,
-        text: report.plainText
-      })
+        text: report.plainText,
+      }),
     });
 
     if (!response.ok) {
@@ -42,7 +45,7 @@ export async function sendPracticeReportEmail(lead: PracticeLead): Promise<Email
     return {
       sent: false,
       skipped: false,
-      error: error instanceof Error ? error.message : "Unknown email error"
+      error: error instanceof Error ? error.message : "Unknown email error",
     };
   }
 }

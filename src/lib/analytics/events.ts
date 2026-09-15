@@ -1,4 +1,7 @@
-type AnalyticsPayload = Record<string, string | number | boolean | null | undefined>;
+type AnalyticsPayload = Record<
+  string,
+  string | number | boolean | null | undefined
+>;
 
 declare global {
   interface Window {
@@ -11,6 +14,8 @@ export function trackAlephEvent(event: string, payload: AnalyticsPayload = {}) {
     return;
   }
 
-  window.dispatchEvent(new CustomEvent("aleph:event", { detail: { event, payload } }));
+  window.dispatchEvent(
+    new CustomEvent("aleph:event", { detail: { event, payload } }),
+  );
   window.va?.(event, payload);
 }

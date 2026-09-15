@@ -4,28 +4,28 @@ const focusPlans: Record<string, string[]> = {
   "Local Visibility": [
     "Complete Google Business Profile services, location signals, consultation hours, photos, and appointment path.",
     "Create search-ready service pages for the top three patient needs in your area.",
-    "Track weekly searches, calls, direction requests, and booked consultations."
+    "Track weekly searches, calls, direction requests, and booked consultations.",
   ],
   "Patient Trust": [
     "Rewrite the clinician story so patients understand qualification, care approach, and fit.",
     "Add condition-specific FAQs and patient-safe proof points before the booking CTA.",
-    "Make consultation expectations clear before the patient calls."
+    "Make consultation expectations clear before the patient calls.",
   ],
   "Pricing Confidence": [
     "Separate consultation fee, follow-up structure, and care package logic.",
     "Prepare a value explanation script for patients comparing cheaper options.",
-    "Remove apologetic pricing language from website, calls, and messages."
+    "Remove apologetic pricing language from website, calls, and messages.",
   ],
   "Patient Retention": [
     "Create a follow-up rhythm after first consultation.",
     "Build patient education messages for pre-visit and post-visit stages.",
-    "Track repeat visits, referral sources, and drop-off points."
+    "Track repeat visits, referral sources, and drop-off points.",
   ],
   "Brand Authority": [
     "Define the clinician's memorable specialty position in one sentence.",
     "Create monthly education themes around the clinician's strongest expertise.",
-    "Show expertise through service pages, FAQs, reviews, and consistent public signals."
-  ]
+    "Show expertise through service pages, FAQs, reviews, and consistent public signals.",
+  ],
 };
 
 export function buildPracticeReport(lead: PracticeLead) {
@@ -33,7 +33,8 @@ export function buildPracticeReport(lead: PracticeLead) {
 
   return {
     subject: "Your Aleph Practice Growth Prescription",
-    preview: "Your diagnostic is saved. Here is the first version of your practice growth prescription.",
+    preview:
+      "Your diagnostic is saved. Here is the first version of your practice growth prescription.",
     plainText: [
       "Aleph Practice Growth Prescription",
       "",
@@ -53,7 +54,7 @@ export function buildPracticeReport(lead: PracticeLead) {
       "30-day focus",
       ...focus.map((item, index) => `${index + 1}. ${item}`),
       "",
-      "Aleph helps independent clinicians turn clinical expertise into visibility, trust, footfall, and stronger pricing confidence."
-    ].join("\n")
+      "Aleph helps independent clinicians turn clinical expertise into visibility, trust, footfall, and stronger pricing confidence.",
+    ].join("\n"),
   };
 }

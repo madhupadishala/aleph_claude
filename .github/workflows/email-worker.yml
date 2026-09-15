@@ -1,0 +1,25 @@
+name: Email queue worker
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: aleph-email-worker
+  cancel-in-progress: false
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Process pending email jobs
+        env:
+          CRON_SECRET: ${{ secrets.ALEPH_CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "ALEPH_CRON_SECRET has not been configured. Worker is not active."
+            exit 1
+          fi
+          curl --fail --silent --show-error --max-time 65 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            https://aleph-claude.vercel.app/api/cron/email

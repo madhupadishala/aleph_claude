@@ -16,3 +16,4 @@ Sprint 6 owns production hardening, SEO, accessibility guardrails, and deploymen
 ## Lock Rule
 
 After Sprint 6 is locked, further changes should be release fixes, domain configuration, environment variable setup, or explicitly approved new product scope.
+

@@ -1,17 +1,27 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { SiteChrome } from "@/components/SiteChrome";
+import { siteUrl } from "@/lib/site";
 
-const instrumentSerif = Instrument_Serif({ subsets: ["latin"], weight: "400", variable: "--font-serif" });
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-serif",
+});
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 
 export const metadata: Metadata = {
   title: {
     default: "Aleph | Practice Growth Intelligence for Clinicians",
-    template: "%s | Aleph"
+    template: "%s | Aleph",
   },
-  description: "Aleph helps independent clinicians grow trusted, visible, and profitable practices through ethical positioning, pricing strategy, and patient footfall systems.",
-  metadataBase: new URL("https://aleph.theclinixai.com"),
+  description:
+    "Aleph helps independent clinicians grow trusted, visible, and profitable practices through ethical positioning, pricing strategy, and patient footfall systems.",
+  metadataBase: new URL(siteUrl),
   applicationName: "Aleph",
   keywords: [
     "clinician growth",
@@ -19,39 +29,52 @@ export const metadata: Metadata = {
     "clinic marketing",
     "local SEO for doctors",
     "practice growth",
-    "patient footfall"
+    "patient footfall",
   ],
   authors: [{ name: "Aleph" }],
   creator: "Aleph",
   publisher: "Aleph",
   alternates: {
-    canonical: "/"
+    canonical: "/",
   },
   openGraph: {
     title: "Aleph | Practice Growth Intelligence for Clinicians",
-    description: "Turn clinical expertise into a trusted, visible, and growing practice.",
+    description:
+      "Turn clinical expertise into a trusted, visible, and growing practice.",
     type: "website",
     siteName: "Aleph",
-    locale: "en_IN"
+    locale: "en_IN",
   },
   twitter: {
     card: "summary_large_image",
     title: "Aleph | Practice Growth Intelligence for Clinicians",
-    description: "Turn clinical expertise into a trusted, visible, and growing practice."
+    description:
+      "Turn clinical expertise into a trusted, visible, and growing practice.",
   },
   robots: {
     index: true,
-    follow: true
-  }
+    follow: true,
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#123629"
+  themeColor: "#123629",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={instrumentSerif.variable + " " + plusJakarta.variable}><body>{children}</body></html>;
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html
+      lang="en"
+      className={instrumentSerif.variable + " " + plusJakarta.variable}
+    >
+      <body>
+        <SiteChrome>{children}</SiteChrome>
+      </body>
+    </html>
+  );
 }

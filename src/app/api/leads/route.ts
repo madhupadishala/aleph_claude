@@ -1,86 +1,80 @@
-import { NextResponse } from "next/server";
-import { sendPracticeReportEmail } from "@/lib/email/resend";
-import { getSupabaseAdmin, type PracticeLead } from "@/lib/supabase/server";
-
-const scoreKeys = [
-  "overall_score",
-  "visibility_score",
-  "trust_score",
-  "pricing_score",
-  "retention_score",
-  "authority_score"
-] as const;
-
-function isEmail(value: unknown): value is string {
-  return typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-function readScore(payload: Partial<PracticeLead>, key: (typeof scoreKeys)[number]) {
-  const value = payload[key];
-
-  if (typeof value !== "number" || value < 0 || value > 100) {
-    throw new Error(key + " must be a score between 0 and 100.");
-  }
-
-  return value;
-}
+import { after } from "next/server";
+import { scoreAnswers } from "@/lib/aleph/diagnostic";
+import { processEmails } from "@/lib/email/worker";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { consentVersion, uuidPattern } from "@/lib/site";
+import {
+  failure,
+  rateLimit,
+  readJson,
+  RequestError,
+  requireSameOrigin,
+} from "@/lib/security/request";
 
 export async function POST(request: Request) {
   try {
-    const payload = (await request.json()) as Partial<PracticeLead>;
-    const emailInput = payload.email;
-    const specialtyInput = payload.specialty;
-
-    if (!isEmail(emailInput)) {
-      return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
+    requireSameOrigin(request);
+    const payload = await readJson(request);
+    if (payload.website)
+      throw new RequestError("Unable to accept this submission.");
+    if (
+      payload.reportConsent !== true ||
+      typeof payload.marketingConsent !== "boolean"
+    )
+      throw new RequestError(
+        "Please agree to saving and emailing your report.",
+      );
+    const email =
+      typeof payload.email === "string"
+        ? payload.email.trim().toLowerCase()
+        : "";
+    const specialty =
+      typeof payload.specialty === "string" ? payload.specialty.trim() : "";
+    const name = typeof payload.name === "string" ? payload.name.trim() : "";
+    if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      throw new RequestError("Enter a valid email address.");
+    if (specialty.length < 2 || specialty.length > 120 || name.length > 120)
+      throw new RequestError("Check your name and specialty.");
+    if (
+      typeof payload.requestId !== "string" ||
+      !uuidPattern.test(payload.requestId)
+    )
+      throw new RequestError("Refresh the page and try again.");
+    let result;
+    try {
+      result = scoreAnswers(payload.answers);
+    } catch {
+      throw new RequestError("Complete all seven questions.");
     }
-
-    if (typeof specialtyInput !== "string" || specialtyInput.trim().length < 2) {
-      return NextResponse.json({ error: "Clinical specialty is required." }, { status: 400 });
-    }
-
-    const email = emailInput.trim().toLowerCase();
-    const specialty = specialtyInput.trim();
-
-    const lead: PracticeLead = {
-      name: payload.name?.trim() || null,
-      email,
-      specialty,
-      overall_score: readScore(payload, "overall_score"),
-      visibility_score: readScore(payload, "visibility_score"),
-      trust_score: readScore(payload, "trust_score"),
-      pricing_score: readScore(payload, "pricing_score"),
-      retention_score: readScore(payload, "retention_score"),
-      authority_score: readScore(payload, "authority_score"),
-      weakest_area: payload.weakest_area?.trim() || "",
-      package_fit: payload.package_fit?.trim() || "",
-      status: "New",
-      notes: null
-    };
-
-    if (!lead.weakest_area || !lead.package_fit) {
-      return NextResponse.json({ error: "Diagnostic result data is incomplete." }, { status: 400 });
-    }
-
-    const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase.from("practice_leads").insert(lead).select("id").single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    const emailResult = await sendPracticeReportEmail(lead);
-
-    return NextResponse.json({
-      ok: true,
-      id: data.id,
-      emailSent: emailResult.sent,
-      emailSkipped: emailResult.skipped,
-      emailError: emailResult.error
+    await rateLimit(request, "lead-ip", 10, 3600);
+    await rateLimit(request, "lead-email", 3, 86400, email);
+    const scores = Object.fromEntries(
+      result.normalized.map((item) => [item.key + "_score", item.score]),
+    );
+    const { data, error } = await getSupabaseAdmin().rpc("aleph_capture", {
+      p_request: payload.requestId,
+      p_marketing: payload.marketingConsent,
+      p_version: consentVersion,
+      p_lead: {
+        name,
+        email,
+        specialty,
+        ...scores,
+        overall_score: result.overall,
+        weakest_area: result.weakest.label,
+        package_fit: result.fit.name,
+      },
     });
+    if (error) throw error;
+    if (data)
+      after(async () => {
+        await processEmails(data, 1);
+      });
+    return Response.json(
+      { ok: true, emailQueued: true },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to save lead.";
-    const status = message.includes("score between") ? 400 : 500;
-    return NextResponse.json({ error: message }, { status });
+    return failure(error);
   }
 }
