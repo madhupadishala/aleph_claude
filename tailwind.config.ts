@@ -4,8 +4,8 @@ const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
-      colors: { ivory: "#FBF9F5", forest: "#1B3B2B", clinic: "#D97757", gold: "#F4E8D1", terracotta: "#D97757", sage: "#8A9A86", ink: "#1B3B2B", mist: "#F4E8D1", line: "#D8D8CC" },
-      boxShadow: { soft: "0 24px 80px rgba(27, 59, 43, 0.12)", glow: "0 20px 50px rgba(217, 119, 87, 0.20)" },
+      colors: { ivory: "#FBF8F1", forest: "#123629", clinic: "#0F766E", gold: "#C59A3D", terracotta: "#C86745", sage: "#8FA69A", ink: "#18231F", mist: "#EDF4F1", line: "#DCE6E1" },
+      boxShadow: { soft: "0 24px 80px rgba(18, 54, 41, 0.12)", glow: "0 20px 50px rgba(197, 154, 61, 0.22)" },
       borderRadius: { aleph: "12px" }
     }
   },
