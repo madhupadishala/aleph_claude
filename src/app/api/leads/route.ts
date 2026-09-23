@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { scoreAnswers } from "@/lib/aleph/diagnostic";
+import { questions, scoreAnswers } from "@/lib/aleph/diagnostic";
 import { processEmails } from "@/lib/email/worker";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { consentVersion, uuidPattern } from "@/lib/site";
@@ -24,6 +24,7 @@ export async function POST(request: Request) {
       throw new RequestError(
         "Please agree to saving and emailing your report.",
       );
+
     const email =
       typeof payload.email === "string"
         ? payload.email.trim().toLowerCase()
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
     const specialty =
       typeof payload.specialty === "string" ? payload.specialty.trim() : "";
     const name = typeof payload.name === "string" ? payload.name.trim() : "";
+
     if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       throw new RequestError("Enter a valid email address.");
     if (specialty.length < 2 || specialty.length > 120 || name.length > 120)
@@ -40,17 +42,23 @@ export async function POST(request: Request) {
       !uuidPattern.test(payload.requestId)
     )
       throw new RequestError("Refresh the page and try again.");
+
     let result;
     try {
       result = scoreAnswers(payload.answers);
     } catch {
-      throw new RequestError("Complete all seven questions.");
+      throw new RequestError(
+        `Complete all ${questions.length} practice intelligence questions.`,
+      );
     }
+
     await rateLimit(request, "lead-ip", 10, 3600);
     await rateLimit(request, "lead-email", 3, 86400, email);
+
     const scores = Object.fromEntries(
       result.normalized.map((item) => [item.key + "_score", item.score]),
     );
+
     const { data, error } = await getSupabaseAdmin().rpc("aleph_capture", {
       p_request: payload.requestId,
       p_marketing: payload.marketingConsent,
@@ -63,13 +71,19 @@ export async function POST(request: Request) {
         overall_score: result.overall,
         weakest_area: result.weakest.label,
         package_fit: result.fit.name,
+        practice_stage: result.context.stage,
+        practice_performance: result.context.performance,
+        appointment_capacity: result.context.capacity,
+        consultation_time: result.context.consultationTime,
       },
     });
+
     if (error) throw error;
     if (data)
       after(async () => {
         await processEmails(data, 1);
       });
+
     return Response.json(
       { ok: true, emailQueued: true },
       { headers: { "Cache-Control": "no-store" } },
