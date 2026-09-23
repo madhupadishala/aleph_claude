@@ -56,7 +56,7 @@ export default function AboutPage() {
           </p>
           <h1 className="mt-5 text-5xl leading-[0.98] md:text-6xl">I&apos;m Dr. Wany.</h1>
           <p className="mt-6 max-w-2xl text-xl leading-8 text-white/80 md:text-2xl">
-            7 years in clinical practice taught me something very clearly:
+            Clinical practice taught me something very clearly:
           </p>
           <p className="mt-7 max-w-3xl text-3xl font-semibold leading-tight md:text-4xl">
             Great doctors do not always build great practices.
@@ -103,7 +103,7 @@ export default function AboutPage() {
                 <p className="mt-1 text-sm text-[#607169]">Founder, Aleph</p>
               </div>
               <span className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-[#0F766E]">
-                7 years in clinical practice
+                Clinician &amp; founder
               </span>
             </div>
 
@@ -112,9 +112,8 @@ export default function AboutPage() {
               That is why I built Aleph.
             </h2>
             <p className="mt-6 text-base leading-8 text-[#41554d]">
-              I have spent the last <strong>7 years inside healthcare</strong>, working
-              with patients, families, clinical teams, and the everyday realities
-              of medical practice.
+              My work inside healthcare has kept me close to patients, families,
+              clinical teams, and the everyday realities of medical practice.
             </p>
             <p className="mt-4 text-base leading-8 text-[#41554d]">
               Over time, I started seeing the same problems repeatedly.
@@ -289,7 +288,7 @@ export default function AboutPage() {
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#DCE6E1] pt-5">
             <div>
               <p className="font-semibold text-[#123629]">Dr. Wany</p>
-              <p className="text-sm text-[#607169]">Founder, Aleph · 7 Years of Clinical Experience</p>
+              <p className="text-sm text-[#607169]">Founder, Aleph</p>
             </div>
             <Link className="button primary" href="/diagnostic">
               Find my growth plan <ArrowUpRight size={18} />
