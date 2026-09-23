@@ -88,16 +88,20 @@ export default function Home() {
         </span>
       </section>
 
-      <div className="border-b border-[#DCE6E1] bg-[#FDFCF9]">
-        <div className="mx-auto flex min-h-[48px] max-w-[1320px] items-center justify-start overflow-x-auto whitespace-nowrap px-4 text-[11px] font-semibold text-[#123629] sm:justify-center sm:px-8 sm:text-xs">
+      <div className="border-y border-[#C59A3D]/40 bg-[#123629] shadow-[0_5px_18px_rgba(18,54,41,0.12)]">
+        <div className="mx-auto flex min-h-[48px] max-w-[1320px] items-center justify-start overflow-x-auto whitespace-nowrap px-4 text-[11px] font-semibold tracking-[0.01em] text-[#FDFCF9] sm:justify-center sm:px-8 sm:text-xs">
           {proofPoints.map((point, index) => (
             <span
               key={point}
               className={
                 "flex items-center px-4 py-2 sm:px-6 " +
-                (index > 0 ? "border-l border-[#DCE6E1]" : "")
+                (index > 0 ? "border-l border-[#C59A3D]/45" : "")
               }
             >
+              <span
+                aria-hidden="true"
+                className="mr-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#C59A3D]"
+              />
               {point}
             </span>
           ))}
