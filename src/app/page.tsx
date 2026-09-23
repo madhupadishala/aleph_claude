@@ -42,6 +42,13 @@ const packageLabels: Record<string, string> = {
   "Aleph Concierge": "BESPOKE SUPPORT",
 };
 
+const proofPoints = [
+  "7+ Years Clinical Experience",
+  "50+ Doctors & Clinics Supported",
+  "Doctor-Led",
+  "Compliance-First Growth",
+];
+
 export default function Home() {
   return (
     <main>
@@ -80,6 +87,23 @@ export default function Home() {
           Built around the person behind the practice.
         </span>
       </section>
+
+      <div className="border-b border-[#DCE6E1] bg-[#FDFCF9]">
+        <div className="mx-auto flex min-h-[48px] max-w-[1320px] items-center justify-start overflow-x-auto whitespace-nowrap px-4 text-[11px] font-semibold text-[#123629] sm:justify-center sm:px-8 sm:text-xs">
+          {proofPoints.map((point, index) => (
+            <span
+              key={point}
+              className={
+                "flex items-center px-4 py-2 sm:px-6 " +
+                (index > 0 ? "border-l border-[#DCE6E1]" : "")
+              }
+            >
+              {point}
+            </span>
+          ))}
+        </div>
+      </div>
+
       <div className="audience-strip">
         <span>YOUR EXPERTISE. YOUR INDEPENDENCE.</span>
         <Link href="/for/doctors">
