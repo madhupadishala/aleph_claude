@@ -301,12 +301,16 @@ export function buildPracticeIntelligencePdf(
   page2.text(result.fit.name, MARGIN + 16, 725, 15, COLORS.forest, true);
   page2.paragraph(result.fit.reason, MARGIN + 155, 711, 340, 8.2, 10.5, COLORS.muted, false, 5);
 
-  page2.text(
-    "This report is practice-growth guidance, not a clinical protocol or a substitute for professional clinical judgement. Clinical decisions, delegation, medicines, diagnostics, and patient safety remain with the treating clinician and applicable standards.",
+  page2.paragraph(
+    "Practice-growth guidance only. Clinical decisions, delegation, medicines, diagnostics, and patient safety remain with the treating clinician and applicable standards.",
     MARGIN,
-    784,
-    6.6,
+    782,
+    PAGE_WIDTH - MARGIN * 2,
+    6.2,
+    7.5,
     COLORS.soft,
+    false,
+    2,
   );
   drawFooter(page2, 2, 2, generatedOn);
 
