@@ -6,14 +6,17 @@ import { ArrowUpRight, Menu, X, Sprout } from "lucide-react";
 
 const links = [
   ["Solutions", "/solutions"],
-  ["For clinicians", "/for/doctors"],
+  ["About", "/about"],
+  ["Blogs", "/blogs"],
   ["Resources", "/resources"],
   ["Pricing", "/pricing"],
 ];
+
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   if (path.startsWith("/admin")) return <>{children}</>;
+
   return (
     <>
       <a className="skip-link" href="#content">
@@ -26,15 +29,19 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
             aleph<span className="logo-dot">.</span>
           </Link>
           <nav className="desktop-nav" aria-label="Main navigation">
-            {links.map(([label, href]) => (
-              <Link
-                aria-current={path === href ? "page" : undefined}
-                key={href}
-                href={href}
-              >
-                {label}
-              </Link>
-            ))}
+            {links.map(([label, href]) => {
+              const active =
+                path === href || (href !== "/" && path.startsWith(`${href}/`));
+              return (
+                <Link
+                  aria-current={active ? "page" : undefined}
+                  key={href}
+                  href={href}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </nav>
           <Link className="button primary nav-cta" href="/diagnostic">
             Find my growth plan <ArrowUpRight size={17} />
@@ -57,6 +64,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
           >
             {[
               ...links,
+              ["For doctors", "/for/doctors"],
               ["For therapists", "/for/therapists"],
               ["For clinics", "/for/clinics"],
             ].map(([label, href]) => (
@@ -83,7 +91,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
               More time for your patients.
             </p>
             <span className="small-copy">
-              An initiative by TheClinixAI · Hyderabad
+              Independent practice growth · Hyderabad, India
             </span>
           </div>
           <div>
@@ -107,7 +115,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} Aleph by TheClinixAI</span>
+          <span>© {new Date().getFullYear()} Aleph</span>
           <span>Thoughtful growth. Independent practice.</span>
         </div>
       </footer>

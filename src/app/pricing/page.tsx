@@ -2,10 +2,19 @@ import Link from "next/link";
 import { Check, ArrowUpRight } from "lucide-react";
 import { packages } from "@/lib/aleph/commercial";
 import { PageIntro } from "@/components/PageIntro";
+
 export const metadata = {
   title: "Pricing",
   alternates: { canonical: "/pricing" },
 };
+
+const packageLabels: Record<string, string> = {
+  "Aleph Starter": "STARTER FOUNDATION",
+  "Aleph Growth": "FOR GROWING PRACTICES",
+  "Aleph Authority": "AUTHORITY BUILDING",
+  "Aleph Concierge": "BESPOKE SUPPORT",
+};
+
 export default function PricingPage() {
   return (
     <main className="page-wrap">
@@ -23,7 +32,7 @@ export default function PricingPage() {
             className={"package " + (pack.featured ? "featured" : "")}
           >
             <p className="eyebrow">
-              {pack.featured ? "FOR GROWING PRACTICES" : "PRACTICE SUPPORT"}
+              {packageLabels[pack.name] ?? "PRACTICE GROWTH"}
             </p>
             <h3>{pack.name}</h3>
             <p className="price">{pack.price}</p>
