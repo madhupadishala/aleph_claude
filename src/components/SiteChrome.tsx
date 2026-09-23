@@ -6,7 +6,6 @@ import { ArrowUpRight, Menu, X, Sprout } from "lucide-react";
 
 const links = [
   ["Solutions", "/solutions"],
-  ["For clinicians", "/for/doctors"],
   ["About", "/about"],
   ["Blogs", "/blogs"],
   ["Resources", "/resources"],
@@ -65,6 +64,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
           >
             {[
               ...links,
+              ["For doctors", "/for/doctors"],
               ["For therapists", "/for/therapists"],
               ["For clinics", "/for/clinics"],
             ].map(([label, href]) => (
