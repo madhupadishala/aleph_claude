@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -83,8 +84,29 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <aside className="flex flex-col justify-between rounded-[2.4rem] border border-[#DCE6E1] bg-[#EDF4F1] p-7 md:p-10">
-          <div>
+        <aside className="overflow-hidden rounded-[2.4rem] border border-[#DCE6E1] bg-[#EDF4F1]">
+          <div className="relative mx-auto aspect-square w-full max-w-[360px] bg-white sm:mt-6 sm:rounded-[1.8rem] lg:mt-7">
+            <Image
+              src="/images/dr-wany-founder.jpg"
+              alt="Dr. Wany, Founder of Aleph"
+              fill
+              sizes="(max-width: 1024px) 90vw, 360px"
+              className="object-cover sm:rounded-[1.8rem]"
+              priority
+            />
+          </div>
+
+          <div className="p-7 md:p-10">
+            <div className="mb-7 flex items-end justify-between gap-4 border-b border-[#DCE6E1] pb-5">
+              <div>
+                <p className="text-xl font-semibold text-[#123629]">Dr. Wany</p>
+                <p className="mt-1 text-sm text-[#607169]">Founder, Aleph</p>
+              </div>
+              <span className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-[#0F766E]">
+                7 years in clinical practice
+              </span>
+            </div>
+
             <p className="eyebrow">WHY ALEPH STARTED</p>
             <h2 className="mt-4 text-4xl leading-tight text-[#123629] md:text-5xl">
               That is why I built Aleph.
@@ -97,14 +119,15 @@ export default function AboutPage() {
             <p className="mt-4 text-base leading-8 text-[#41554d]">
               Over time, I started seeing the same problems repeatedly.
             </p>
-          </div>
-          <div className="mt-8 rounded-[1.6rem] bg-white p-5">
-            <p className="text-sm leading-6 text-[#52665e]">
-              Aleph started from one simple question:
-            </p>
-            <p className="mt-2 text-2xl font-semibold leading-snug text-[#123629]">
-              What is actually stopping this practice from growing?
-            </p>
+
+            <div className="mt-8 rounded-[1.6rem] bg-white p-5">
+              <p className="text-sm leading-6 text-[#52665e]">
+                Aleph started from one simple question:
+              </p>
+              <p className="mt-2 text-2xl font-semibold leading-snug text-[#123629]">
+                What is actually stopping this practice from growing?
+              </p>
+            </div>
           </div>
         </aside>
       </section>
