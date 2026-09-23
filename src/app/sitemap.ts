@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { segments } from "@/lib/aleph/commercial";
+import { blogPosts } from "@/lib/aleph/blogs";
 import { siteUrl } from "@/lib/site";
 
 const baseUrl = siteUrl;
@@ -7,6 +8,8 @@ const baseUrl = siteUrl;
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
     "",
+    "/about",
+    "/blogs",
     "/diagnostic",
     "/solutions",
     "/pricing",
@@ -14,11 +17,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/privacy",
   ];
   const segmentRoutes = segments.map((segment) => `/for/${segment.slug}`);
+  const blogRoutes = blogPosts.map((post) => `/blogs/${post.slug}`);
 
-  return [...staticRoutes, ...segmentRoutes].map((route) => ({
+  return [...staticRoutes, ...segmentRoutes, ...blogRoutes].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: route === "" ? "weekly" : "monthly",
+    changeFrequency:
+      route === "" || route === "/blogs" ? "weekly" : "monthly",
     priority: route === "" ? 1 : 0.8,
   }));
 }
