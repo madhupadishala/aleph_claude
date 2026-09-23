@@ -235,7 +235,7 @@ export function buildPracticeIntelligencePdf(
   page1.fillRect(0, 0, PAGE_WIDTH, 177, COLORS.forest);
   page1.text("aleph.", MARGIN, 34, 18, COLORS.white, true);
   page1.text("PRACTICE INTELLIGENCE REPORT", MARGIN, 72, 8.5, COLORS.gold, true);
-  page1.text("A clearer view of what is limiting growth", MARGIN, 92, 24, COLORS.white, true);
+  page1.text("What is limiting growth", MARGIN, 92, 24, COLORS.white, true);
   page1.text(result.fit.name, MARGIN, 131, 16, COLORS.white, true);
   page1.text("recommended starting pathway", MARGIN + estimateWidth(result.fit.name, 16, true) + 10, 136, 8, COLORS.soft);
 
