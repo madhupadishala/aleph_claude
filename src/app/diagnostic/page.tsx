@@ -19,14 +19,27 @@ const phases: Phase[] = [
   "affordability",
 ];
 
+const STORAGE_KEY = "aleph-practice-intelligence-v3";
+
 const questionIndexesFor = (phase: Phase) =>
   questions
     .map((question, index) => ({ question, index }))
     .filter(({ question }) => question.phase === phase)
     .map(({ index }) => index);
 
+function createRequestId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
+    const value = Math.floor(Math.random() * 16);
+    const digit = char === "x" ? value : (value & 0x3) | 0x8;
+    return digit.toString(16);
+  });
+}
+
 export default function DiagnosticPage() {
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [answers, setAnswers] = useState<Array<number | undefined>>([]);
   const [step, setStep] = useState(0);
   const [reviewPhase, setReviewPhase] = useState<Phase | null>(null);
   const [editingFromReview, setEditingFromReview] = useState<Phase | null>(null);
@@ -36,16 +49,18 @@ export default function DiagnosticPage() {
   const [requestId, setRequestId] = useState("");
   const heading = useRef<HTMLHeadingElement>(null);
 
-  const complete = answers.length === questions.length && step === questions.length && !reviewPhase;
-  const result = complete ? scoreAnswers(answers) : null;
-  const currentQuestion = step < questions.length ? questions[step] : null;
+  const allAnswered = questions.every((_, index) => Number.isInteger(answers[index]));
+  const completeAnswers = allAnswered ? answers.map(Number) : null;
+  const complete = completeAnswers !== null && step === questions.length && !reviewPhase;
+  const result = complete && completeAnswers ? scoreAnswers(completeAnswers) : null;
+  const currentQuestion = step >= 0 && step < questions.length ? questions[step] : null;
   const currentPhase = currentQuestion?.phase ?? null;
 
   const phaseProgress = useMemo(() => {
     return Object.fromEntries(
       phases.map((phase) => {
         const indices = questionIndexesFor(phase);
-        const completed = indices.filter((index) => answers[index] !== undefined).length;
+        const completed = indices.filter((index) => Number.isInteger(answers[index])).length;
         return [phase, { completed, total: indices.length }];
       }),
     ) as Record<Phase, { completed: number; total: number }>;
@@ -53,23 +68,43 @@ export default function DiagnosticPage() {
 
   useEffect(() => {
     try {
-      const saved = JSON.parse(sessionStorage.getItem("aleph-practice-intelligence-v2") ?? "null");
-      if (
-        Array.isArray(saved?.answers) &&
-        saved.answers.length <= questions.length &&
-        saved.answers.every(
-          (answer: unknown, index: number) =>
+      const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? "null");
+      if (Array.isArray(saved?.answers) && saved.answers.length <= questions.length) {
+        const valid = saved.answers.every((answer: unknown, index: number) => {
+          if (answer === null) return true;
+          const question = questions[index];
+          return (
+            !!question &&
             Number.isInteger(answer) &&
             Number(answer) >= 0 &&
-            Number(answer) < questions[index].options.length,
-        )
-      ) {
-        setAnswers(saved.answers);
-        setStep(saved.answers.length);
+            Number(answer) < question.options.length
+          );
+        });
+
+        if (valid) {
+          const restored = saved.answers.map((answer: unknown) =>
+            answer === null ? undefined : Number(answer),
+          );
+          setAnswers(restored);
+
+          const savedStep = Number.isInteger(saved?.step) ? Number(saved.step) : -1;
+          if (savedStep >= 0 && savedStep <= questions.length) {
+            setStep(savedStep);
+          } else {
+            const firstMissing = questions.findIndex((_, index) => !Number.isInteger(restored[index]));
+            setStep(firstMissing === -1 ? questions.length : firstMissing);
+          }
+        }
       }
-      if (typeof saved?.requestId === "string") setRequestId(saved.requestId);
-    } catch {}
-    setRequestId((current) => current || crypto.randomUUID());
+      if (typeof saved?.requestId === "string" && saved.requestId.length > 10) {
+        setRequestId(saved.requestId);
+      }
+    } catch {
+      try {
+        sessionStorage.removeItem(STORAGE_KEY);
+      } catch {}
+    }
+    setRequestId((current) => current || createRequestId());
     setReady(true);
   }, []);
 
@@ -77,18 +112,27 @@ export default function DiagnosticPage() {
     if (!ready) return;
     try {
       sessionStorage.setItem(
-        "aleph-practice-intelligence-v2",
-        JSON.stringify({ answers, requestId }),
+        STORAGE_KEY,
+        JSON.stringify({ answers, step, requestId }),
       );
     } catch {}
-  }, [answers, ready, requestId]);
+  }, [answers, step, ready, requestId]);
 
   useEffect(() => {
     if (ready) heading.current?.focus();
   }, [step, reviewPhase, ready]);
 
+  function movePastPhase(phase: Phase) {
+    const phasePosition = phases.indexOf(phase);
+    const nextPhase = phases[phasePosition + 1];
+    setReviewPhase(null);
+    setEditingFromReview(null);
+    setStep(nextPhase ? questionIndexesFor(nextPhase)[0] : questions.length);
+  }
+
   function chooseAnswer(optionIndex: number) {
     if (!currentQuestion) return;
+
     const updated = [...answers];
     updated[step] = optionIndex;
     setAnswers(updated);
@@ -97,16 +141,25 @@ export default function DiagnosticPage() {
     if (editingFromReview) {
       const phase = editingFromReview;
       setEditingFromReview(null);
-      window.setTimeout(() => setReviewPhase(phase), 140);
+      setReviewPhase(phase);
       return;
     }
 
     const phaseIndices = questionIndexesFor(currentQuestion.phase);
-    const lastInPhase = phaseIndices[phaseIndices.length - 1] === step;
-    window.setTimeout(() => {
-      if (lastInPhase) setReviewPhase(currentQuestion.phase);
-      else setStep(step + 1);
-    }, 140);
+    const positionInPhase = phaseIndices.indexOf(step);
+    const nextInPhase = phaseIndices[positionInPhase + 1];
+
+    if (nextInPhase !== undefined) {
+      setStep(nextInPhase);
+      return;
+    }
+
+    if (phaseIndices.length > 1) {
+      setReviewPhase(currentQuestion.phase);
+      return;
+    }
+
+    movePastPhase(currentQuestion.phase);
   }
 
   function editQuestion(index: number, phase: Phase) {
@@ -115,32 +168,36 @@ export default function DiagnosticPage() {
     setStep(index);
   }
 
-  function finalisePhase(phase: Phase) {
-    setReviewPhase(null);
-    const phasePosition = phases.indexOf(phase);
-    const nextPhase = phases[phasePosition + 1];
-    if (!nextPhase) {
-      setStep(questions.length);
-      return;
-    }
-    setStep(questionIndexesFor(nextPhase)[0]);
-  }
-
   function previous() {
-    if (step === 0) return;
+    if (!currentQuestion || !currentPhase) return;
     setEditingFromReview(null);
     setReviewPhase(null);
-    setStep(step - 1);
+
+    const phaseIndices = questionIndexesFor(currentPhase);
+    const positionInPhase = phaseIndices.indexOf(step);
+    if (positionInPhase > 0) {
+      setStep(phaseIndices[positionInPhase - 1]);
+      return;
+    }
+
+    const phasePosition = phases.indexOf(currentPhase);
+    const previousPhase = phases[phasePosition - 1];
+    if (!previousPhase) return;
+    const previousIndices = questionIndexesFor(previousPhase);
+    setStep(previousIndices[previousIndices.length - 1]);
   }
 
   function reset() {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {}
     setAnswers([]);
     setStep(0);
     setReviewPhase(null);
     setEditingFromReview(null);
     setState("idle");
     setMessage("");
-    setRequestId(crypto.randomUUID());
+    setRequestId(createRequestId());
   }
 
   function download() {
@@ -174,15 +231,17 @@ export default function DiagnosticPage() {
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (state === "saving" || state === "saved") return;
+    if (state === "saving" || state === "saved" || !completeAnswers) return;
     setState("saving");
     setMessage("");
     const fields = new FormData(event.currentTarget);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 20000);
     try {
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        signal: AbortSignal.timeout(20000),
+        signal: controller.signal,
         body: JSON.stringify({
           name: fields.get("name"),
           email: fields.get("email"),
@@ -190,7 +249,7 @@ export default function DiagnosticPage() {
           website: fields.get("website"),
           reportConsent: fields.get("reportConsent") === "on",
           marketingConsent: fields.get("marketingConsent") === "on",
-          answers,
+          answers: completeAnswers,
           requestId,
         }),
       });
@@ -201,6 +260,8 @@ export default function DiagnosticPage() {
     } catch (error) {
       setState("error");
       setMessage(error instanceof Error ? error.message : "Unable to save your report.");
+    } finally {
+      window.clearTimeout(timeout);
     }
   }
 
@@ -208,9 +269,7 @@ export default function DiagnosticPage() {
     <main className="min-h-[calc(100vh-80px)] bg-[#FBF8F1]">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-4 md:px-8">
         <Link href="/" className="text-link"><ArrowLeft size={16} /> Back to Aleph</Link>
-        <span className="hidden text-xs font-bold uppercase tracking-[0.12em] text-[#718078] sm:block">
-          Aleph Practice Intelligence
-        </span>
+        <span className="hidden text-xs font-bold uppercase tracking-[0.12em] text-[#718078] sm:block">Aleph Practice Intelligence</span>
       </div>
 
       {!ready ? (
@@ -220,24 +279,23 @@ export default function DiagnosticPage() {
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0F766E]">Review & finalise</p>
-              <h1 ref={heading} tabIndex={-1} className="mt-1 text-3xl font-semibold text-[#123629]">
-                {phaseLabels[reviewPhase]}
-              </h1>
+              <h1 ref={heading} tabIndex={-1} className="mt-1 text-3xl font-semibold text-[#123629]">{phaseLabels[reviewPhase]}</h1>
             </div>
-            <span className="rounded-full bg-[#EDF4F1] px-3 py-1 text-xs font-bold text-[#123629]">
-              {phases.indexOf(reviewPhase) + 1} / {phases.length}
-            </span>
+            <span className="rounded-full bg-[#EDF4F1] px-3 py-1 text-xs font-bold text-[#123629]">{phases.indexOf(reviewPhase) + 1} / {phases.length}</span>
           </div>
 
           <div className="overflow-hidden rounded-2xl border border-[#DCE6E1] bg-white">
             {questionIndexesFor(reviewPhase).map((index) => {
               const question = questions[index];
-              const selected = question.options[answers[index]];
+              const selectedIndex = answers[index];
+              const selected = Number.isInteger(selectedIndex)
+                ? question.options[Number(selectedIndex)]
+                : undefined;
               return (
                 <div key={question.id} className="flex items-start justify-between gap-4 border-b border-[#EDF4F1] p-4 last:border-0">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-[#52665e]">{question.prompt}</p>
-                    <p className="mt-1 font-semibold text-[#123629]">{selected?.label}</p>
+                    <p className="mt-1 font-semibold text-[#123629]">{selected?.label ?? "Not answered"}</p>
                   </div>
                   <button type="button" onClick={() => editQuestion(index, reviewPhase)} className="shrink-0 rounded-lg border border-[#DCE6E1] p-2 text-[#0F766E]" aria-label={`Edit ${question.prompt}`}>
                     <Pencil size={16} />
@@ -247,7 +305,7 @@ export default function DiagnosticPage() {
             })}
           </div>
 
-          <button type="button" onClick={() => finalisePhase(reviewPhase)} className="button primary mt-5 w-full justify-center sm:w-auto">
+          <button type="button" onClick={() => movePastPhase(reviewPhase)} className="button primary mt-5 w-full justify-center sm:w-auto">
             Finalise & continue <ArrowRight size={17} />
           </button>
         </section>
@@ -278,7 +336,10 @@ export default function DiagnosticPage() {
                 {result.priorities.map((priority, index) => (
                   <div key={priority.key} className="flex gap-3 rounded-xl border border-[#DCE6E1] p-4">
                     <span className="font-bold text-[#C86745]">0{index + 1}</span>
-                    <div><strong className="text-[#123629]">{priority.label}</strong><p className="mt-1 text-sm leading-6 text-[#52665e]">{prescriptions[priority.key]}</p></div>
+                    <div>
+                      <strong className="text-[#123629]">{priority.label}</strong>
+                      <p className="mt-1 text-sm leading-6 text-[#52665e]">{prescriptions[priority.key]}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -316,7 +377,7 @@ export default function DiagnosticPage() {
             {phases.map((phase, index) => {
               const progress = phaseProgress[phase];
               const active = currentPhase === phase;
-              const done = progress.completed === progress.total;
+              const done = progress.total > 0 && progress.completed === progress.total;
               return (
                 <div key={phase} className={`flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${active ? "bg-[#123629] text-white" : done ? "bg-[#EDF4F1] text-[#0F766E]" : "bg-white text-[#718078]"}`}>
                   {done ? <Check size={13} /> : index + 1} {phaseLabels[phase]}
@@ -332,9 +393,7 @@ export default function DiagnosticPage() {
             </div>
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#EDF4F1]"><div className="h-full bg-[#0F766E]" style={{ width: `${((step + 1) / questions.length) * 100}%` }} /></div>
 
-            <h1 ref={heading} tabIndex={-1} className="mt-6 text-2xl font-semibold leading-snug text-[#123629] md:text-3xl">
-              {currentQuestion.prompt}
-            </h1>
+            <h1 ref={heading} tabIndex={-1} className="mt-6 text-2xl font-semibold leading-snug text-[#123629] md:text-3xl">{currentQuestion.prompt}</h1>
 
             <div className="mt-5 grid gap-2.5">
               {currentQuestion.options.map((option, index) => {
@@ -359,7 +418,12 @@ export default function DiagnosticPage() {
             </div>
           </div>
         </section>
-      ) : null}
+      ) : (
+        <section className="mx-auto max-w-3xl px-5 py-16">
+          <p className="text-[#52665e]">We could not restore this assessment safely.</p>
+          <button type="button" onClick={reset} className="button primary mt-4">Start a fresh assessment</button>
+        </section>
+      )}
     </main>
   );
 }
