@@ -39,7 +39,7 @@ function createRequestId() {
 }
 
 export default function DiagnosticPage() {
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [answers, setAnswers] = useState<Array<number | undefined>>([]);
   const [step, setStep] = useState(0);
   const [reviewPhase, setReviewPhase] = useState<Phase | null>(null);
   const [editingFromReview, setEditingFromReview] = useState<Phase | null>(null);
@@ -50,8 +50,9 @@ export default function DiagnosticPage() {
   const heading = useRef<HTMLHeadingElement>(null);
 
   const allAnswered = questions.every((_, index) => Number.isInteger(answers[index]));
-  const complete = allAnswered && step === questions.length && !reviewPhase;
-  const result = complete ? scoreAnswers(answers) : null;
+  const completeAnswers = allAnswered ? answers.map(Number) : null;
+  const complete = completeAnswers !== null && step === questions.length && !reviewPhase;
+  const result = complete && completeAnswers ? scoreAnswers(completeAnswers) : null;
   const currentQuestion = step >= 0 && step < questions.length ? questions[step] : null;
   const currentPhase = currentQuestion?.phase ?? null;
 
@@ -68,8 +69,9 @@ export default function DiagnosticPage() {
   useEffect(() => {
     try {
       const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? "null");
-      if (Array.isArray(saved?.answers)) {
+      if (Array.isArray(saved?.answers) && saved.answers.length <= questions.length) {
         const valid = saved.answers.every((answer: unknown, index: number) => {
+          if (answer === null) return true;
           const question = questions[index];
           return (
             !!question &&
@@ -78,10 +80,20 @@ export default function DiagnosticPage() {
             Number(answer) < question.options.length
           );
         });
-        if (valid && saved.answers.length <= questions.length) {
-          const restored = saved.answers.map(Number);
+
+        if (valid) {
+          const restored = saved.answers.map((answer: unknown) =>
+            answer === null ? undefined : Number(answer),
+          );
           setAnswers(restored);
-          setStep(restored.length === questions.length ? questions.length : restored.length);
+
+          const savedStep = Number.isInteger(saved?.step) ? Number(saved.step) : -1;
+          if (savedStep >= 0 && savedStep <= questions.length) {
+            setStep(savedStep);
+          } else {
+            const firstMissing = questions.findIndex((_, index) => !Number.isInteger(restored[index]));
+            setStep(firstMissing === -1 ? questions.length : firstMissing);
+          }
         }
       }
       if (typeof saved?.requestId === "string" && saved.requestId.length > 10) {
@@ -99,9 +111,12 @@ export default function DiagnosticPage() {
   useEffect(() => {
     if (!ready) return;
     try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ answers, requestId }));
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ answers, step, requestId }),
+      );
     } catch {}
-  }, [answers, ready, requestId]);
+  }, [answers, step, ready, requestId]);
 
   useEffect(() => {
     if (ready) heading.current?.focus();
@@ -131,10 +146,11 @@ export default function DiagnosticPage() {
     }
 
     const phaseIndices = questionIndexesFor(currentQuestion.phase);
-    const lastInPhase = phaseIndices.at(-1) === step;
+    const positionInPhase = phaseIndices.indexOf(step);
+    const nextInPhase = phaseIndices[positionInPhase + 1];
 
-    if (!lastInPhase) {
-      setStep(step + 1);
+    if (nextInPhase !== undefined) {
+      setStep(nextInPhase);
       return;
     }
 
@@ -153,10 +169,22 @@ export default function DiagnosticPage() {
   }
 
   function previous() {
-    if (step <= 0) return;
+    if (!currentQuestion || !currentPhase) return;
     setEditingFromReview(null);
     setReviewPhase(null);
-    setStep(step - 1);
+
+    const phaseIndices = questionIndexesFor(currentPhase);
+    const positionInPhase = phaseIndices.indexOf(step);
+    if (positionInPhase > 0) {
+      setStep(phaseIndices[positionInPhase - 1]);
+      return;
+    }
+
+    const phasePosition = phases.indexOf(currentPhase);
+    const previousPhase = phases[phasePosition - 1];
+    if (!previousPhase) return;
+    const previousIndices = questionIndexesFor(previousPhase);
+    setStep(previousIndices[previousIndices.length - 1]);
   }
 
   function reset() {
@@ -203,13 +231,13 @@ export default function DiagnosticPage() {
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (state === "saving" || state === "saved") return;
+    if (state === "saving" || state === "saved" || !completeAnswers) return;
     setState("saving");
     setMessage("");
     const fields = new FormData(event.currentTarget);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 20000);
     try {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 20000);
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -221,11 +249,10 @@ export default function DiagnosticPage() {
           website: fields.get("website"),
           reportConsent: fields.get("reportConsent") === "on",
           marketingConsent: fields.get("marketingConsent") === "on",
-          answers,
+          answers: completeAnswers,
           requestId,
         }),
       });
-      window.clearTimeout(timeout);
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to save your report.");
       setState("saved");
@@ -233,6 +260,8 @@ export default function DiagnosticPage() {
     } catch (error) {
       setState("error");
       setMessage(error instanceof Error ? error.message : "Unable to save your report.");
+    } finally {
+      window.clearTimeout(timeout);
     }
   }
 
@@ -258,7 +287,10 @@ export default function DiagnosticPage() {
           <div className="overflow-hidden rounded-2xl border border-[#DCE6E1] bg-white">
             {questionIndexesFor(reviewPhase).map((index) => {
               const question = questions[index];
-              const selected = question.options[answers[index]];
+              const selectedIndex = answers[index];
+              const selected = Number.isInteger(selectedIndex)
+                ? question.options[Number(selectedIndex)]
+                : undefined;
               return (
                 <div key={question.id} className="flex items-start justify-between gap-4 border-b border-[#EDF4F1] p-4 last:border-0">
                   <div className="min-w-0">
