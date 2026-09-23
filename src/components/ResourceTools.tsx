@@ -1,6 +1,8 @@
 "use client";
-import { useState } from "react";
+
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { Copy, Check } from "lucide-react";
+
 const checklist = [
   "Clinic name, address and hours are accurate",
   "Services and clinician qualifications are clear",
@@ -8,17 +10,101 @@ const checklist = [
   "Location and accessibility information are available",
   "Common patient questions have clear answers",
 ];
+
 const script =
   "Thank you for reaching out. We can help you understand whether our services are a good fit. Our consultation fee is [fee] for [duration]. Available appointments are [times]. Would you like details about the first visit or help choosing a time?";
+
+type NumberFieldProps = {
+  label: string;
+  value: string;
+  setValue: Dispatch<SetStateAction<string>>;
+  min: number;
+  max: number;
+};
+
+function NumberField({
+  label,
+  value,
+  setValue,
+  min,
+  max,
+}: NumberFieldProps) {
+  return (
+    <label className="field">
+      {label}
+      <input
+        type="number"
+        inputMode="numeric"
+        min={min}
+        max={max}
+        value={value}
+        onFocus={(event) => event.currentTarget.select()}
+        onChange={(event) => setValue(event.target.value)}
+        onBlur={() => {
+          if (value.trim() === "") {
+            setValue(String(min));
+            return;
+          }
+
+          const parsed = Number(value);
+          if (!Number.isFinite(parsed)) {
+            setValue(String(min));
+            return;
+          }
+
+          setValue(String(Math.min(max, Math.max(min, parsed))));
+        }}
+      />
+    </label>
+  );
+}
+
+async function copyToClipboard(text: string) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch {
+      // Some browsers block the Clipboard API even on secure pages.
+      // Fall through to the selection-based fallback below.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  textarea.style.pointerEvents = "none";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  const copied = document.execCommand("copy");
+  document.body.removeChild(textarea);
+
+  if (!copied) throw new Error("Clipboard copy failed");
+}
+
+function asNumber(value: string) {
+  if (value.trim() === "") return 0;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export function ResourceTools() {
-  const [cost, setCost] = useState(30000);
-  const [income, setIncome] = useState(60000);
-  const [slots, setSlots] = useState(120);
-  const [occupancy, setOccupancy] = useState(75);
+  const [cost, setCost] = useState("30000");
+  const [income, setIncome] = useState("60000");
+  const [slots, setSlots] = useState("120");
+  const [occupancy, setOccupancy] = useState("75");
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
-  const visits = (slots * occupancy) / 100;
-  const fee = visits > 0 ? Math.ceil((cost + income) / visits) : null;
+
+  const visits = (asNumber(slots) * asNumber(occupancy)) / 100;
+  const fee =
+    visits > 0
+      ? Math.ceil((asNumber(cost) + asNumber(income)) / visits)
+      : null;
+
   return (
     <div className="resource-grid">
       <section id="calculator" className="resource-tool">
@@ -28,36 +114,36 @@ export function ResourceTools() {
           Explore the average fee needed to cover costs and your target income.
           This is a planning scenario, before tax, not a fee recommendation.
         </p>
-        {[
-          ["Monthly practice costs (INR)", cost, setCost, 0, 10000000],
-          ["Target monthly income (INR)", income, setIncome, 0, 10000000],
-          ["Available appointments per month", slots, setSlots, 1, 2000],
-          [
-            "Expected appointment occupancy (%)",
-            occupancy,
-            setOccupancy,
-            1,
-            100,
-          ],
-        ].map(([label, value, set, min, max]) => (
-          <label className="field" key={label as string}>
-            {label as string}
-            <input
-              type="number"
-              min={min as number}
-              max={max as number}
-              value={value as number}
-              onChange={(e) =>
-                (set as (n: number) => void)(
-                  Math.min(
-                    Number(max),
-                    Math.max(Number(min), Number(e.target.value)),
-                  ),
-                )
-              }
-            />
-          </label>
-        ))}
+
+        <NumberField
+          label="Monthly practice costs (INR)"
+          value={cost}
+          setValue={setCost}
+          min={0}
+          max={10000000}
+        />
+        <NumberField
+          label="Target monthly income (INR)"
+          value={income}
+          setValue={setIncome}
+          min={0}
+          max={10000000}
+        />
+        <NumberField
+          label="Available appointments per month"
+          value={slots}
+          setValue={setSlots}
+          min={1}
+          max={2000}
+        />
+        <NumberField
+          label="Expected appointment occupancy (%)"
+          value={occupancy}
+          setValue={setOccupancy}
+          min={1}
+          max={100}
+        />
+
         <output className="calculator-result block" aria-live="polite">
           <span className="small-copy">
             ESTIMATED AVERAGE FEE PER APPOINTMENT
@@ -72,6 +158,7 @@ export function ResourceTools() {
           </span>
         </output>
       </section>
+
       <div className="grid gap-6">
         <section className="resource-tool">
           <p className="eyebrow">02 / LOCAL VISIBILITY</p>
@@ -89,32 +176,39 @@ export function ResourceTools() {
             </label>
           ))}
         </section>
+
         <section className="resource-tool">
           <p className="eyebrow">03 / BETTER CONVERSATIONS</p>
           <h2>A thoughtful inquiry reply</h2>
           <p>{script}</p>
           <button
+            type="button"
             className="button secondary"
             onClick={async () => {
               try {
-                await navigator.clipboard.writeText(script);
+                await copyToClipboard(script);
                 setCopied(true);
                 setCopyError(false);
               } catch {
+                setCopied(false);
                 setCopyError(true);
               }
             }}
           >
-            {copied ? <Check size={16} /> : <Copy size={16} />}{" "}
+            {copied ? <Check size={16} /> : <Copy size={16} />} {" "}
             {copied ? "Copied" : "Copy template"}
           </button>
+          <p className="sr-only" role="status" aria-live="polite">
+            {copied ? "Template copied to clipboard." : ""}
+          </p>
           {copyError && (
             <p role="status">
-              Clipboard is unavailable. Select the text above to copy it.
+              Clipboard access is unavailable. Select the text above to copy it.
             </p>
           )}
         </section>
       </div>
+
       <section className="resource-tool md:col-span-2">
         <p className="eyebrow">04 / YOUR WEBSITE</p>
         <h2>A page patients can understand</h2>
