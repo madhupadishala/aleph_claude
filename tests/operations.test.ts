@@ -2,21 +2,58 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
-import { scoreAnswers } from "../src/lib/aleph/diagnostic";
+import { questions, scoreAnswers } from "../src/lib/aleph/diagnostic";
 import { readJson, requireSameOrigin } from "../src/lib/security/request";
 
-test("server scoring rejects manipulated and incomplete answers", () => {
-  assert.equal(scoreAnswers([0, 0, 0, 0, 0, 0, 0]).overall, 100);
-  assert.ok(scoreAnswers([2, 2, 2, 2, 2, 2, 2]).overall < 25);
+test("practice intelligence scoring rejects manipulated and incomplete answers", () => {
+  const strongest = questions.map(() => 0);
+  const weakest = questions.map((question) => question.options.length - 1);
+
+  assert.equal(scoreAnswers(strongest).overall, 100);
+  assert.ok(scoreAnswers(weakest).overall < 30);
+
   for (const input of [
     null,
     [],
-    [3, 0, 0, 0, 0, 0, 0],
-    [0.1, 0, 0, 0, 0, 0, 0],
+    strongest.slice(0, -1),
+    strongest.map((answer, index) => (index === 0 ? 99 : answer)),
+    strongest.map((answer, index) => (index === 1 ? 0.1 : answer)),
     "100",
-  ])
+  ]) {
     assert.throws(() => scoreAnswers(input));
+  }
 });
+
+test("established underperforming practice with unused capacity routes to Growth", () => {
+  const answers = questions.map(() => 0);
+  const set = (id: string, value: number) => {
+    const index = questions.findIndex((question) => question.id === id);
+    assert.notEqual(index, -1);
+    answers[index] = value;
+  };
+
+  set("practice_age", 2);
+  set("performance", 2);
+  set("capacity", 2);
+  set("support_preference", 1);
+
+  const result = scoreAnswers(answers);
+  assert.equal(result.context.stage, "Established practice (2–5 years)");
+  assert.equal(result.context.performance, "Below target");
+  assert.equal(result.context.capacity, "Available appointment capacity");
+  assert.equal(result.fit.name, "Aleph Growth");
+  assert.match(result.fit.copy, /available/i);
+});
+
+test("done-for-you preference routes to Concierge independently of practice score", () => {
+  const answers = questions.map((question) => question.options.length - 1);
+  const supportIndex = questions.findIndex(
+    (question) => question.id === "support_preference",
+  );
+  answers[supportIndex] = 2;
+  assert.equal(scoreAnswers(answers).fit.name, "Aleph Concierge");
+});
+
 test("request guard rejects malformed, oversized and cross-origin requests", async () => {
   const req = (body: string) =>
     new Request("https://aleph.example/api/leads", {
@@ -31,6 +68,7 @@ test("request guard rejects malformed, oversized and cross-origin requests", asy
   );
   assert.throws(() => requireSameOrigin(req("{}")));
 });
+
 test("database queue: atomic capture, consent, suppression, retries and rate limiting", async () => {
   const db = new PGlite();
   try {
