@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { Copy, Check } from "lucide-react";
+import { Calculator, Check, Copy } from "lucide-react";
 
 const checklist = [
   "Clinic name, address and hours are accurate",
@@ -22,13 +22,7 @@ type NumberFieldProps = {
   max: number;
 };
 
-function NumberField({
-  label,
-  value,
-  setValue,
-  min,
-  max,
-}: NumberFieldProps) {
+function NumberField({ label, value, setValue, min, max }: NumberFieldProps) {
   return (
     <label className="field">
       {label}
@@ -45,13 +39,11 @@ function NumberField({
             setValue(String(min));
             return;
           }
-
           const parsed = Number(value);
           if (!Number.isFinite(parsed)) {
             setValue(String(min));
             return;
           }
-
           setValue(String(Math.min(max, Math.max(min, parsed))));
         }}
       />
@@ -65,8 +57,7 @@ async function copyToClipboard(text: string) {
       await navigator.clipboard.writeText(text);
       return;
     } catch {
-      // Some browsers block the Clipboard API even on secure pages.
-      // Fall through to the selection-based fallback below.
+      // Fall through for browsers that block Clipboard API access.
     }
   }
 
@@ -75,13 +66,10 @@ async function copyToClipboard(text: string) {
   textarea.setAttribute("readonly", "");
   textarea.style.position = "fixed";
   textarea.style.opacity = "0";
-  textarea.style.pointerEvents = "none";
   document.body.appendChild(textarea);
   textarea.select();
-
   const copied = document.execCommand("copy");
   document.body.removeChild(textarea);
-
   if (!copied) throw new Error("Clipboard copy failed");
 }
 
@@ -106,84 +94,102 @@ export function ResourceTools() {
       : null;
 
   return (
-    <div className="resource-grid">
-      <section id="calculator" className="resource-tool">
-        <p className="eyebrow">01 / PRICING</p>
-        <h2>Your sustainable fee explorer</h2>
-        <p>
-          Explore the average fee needed to cover costs and your target income.
-          This is a planning scenario, before tax, not a fee recommendation.
+    <section className="mt-8">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="eyebrow">QUICK UTILITIES</p>
+          <h2 className="text-3xl font-semibold text-[#123629]">
+            Use only what you need.
+          </h2>
+        </div>
+        <p className="max-w-xl text-sm leading-6 text-[#607169]">
+          These are simple utilities, not the Aleph intelligence engine. Your
+          product recommendation comes from the Practice Intelligence assessment.
         </p>
+      </div>
 
-        <NumberField
-          label="Monthly practice costs (INR)"
-          value={cost}
-          setValue={setCost}
-          min={0}
-          max={10000000}
-        />
-        <NumberField
-          label="Target monthly income (INR)"
-          value={income}
-          setValue={setIncome}
-          min={0}
-          max={10000000}
-        />
-        <NumberField
-          label="Available appointments per month"
-          value={slots}
-          setValue={setSlots}
-          min={1}
-          max={2000}
-        />
-        <NumberField
-          label="Expected appointment occupancy (%)"
-          value={occupancy}
-          setValue={setOccupancy}
-          min={1}
-          max={100}
-        />
-
-        <output className="calculator-result block" aria-live="polite">
-          <span className="small-copy">
-            ESTIMATED AVERAGE FEE PER APPOINTMENT
-          </span>
-          <strong>
-            {fee === null
-              ? "Add appointment capacity"
-              : "₹" + fee.toLocaleString("en-IN")}
-          </strong>
-          <span className="small-copy">
-            Based on approximately {Math.round(visits)} appointments each month.
-          </span>
-        </output>
-      </section>
-
-      <div className="grid gap-6">
-        <section className="resource-tool">
-          <p className="eyebrow">02 / LOCAL VISIBILITY</p>
-          <h2>A more discoverable practice</h2>
-          {checklist.map((item) => (
-            <label
-              className="flex min-h-12 items-start gap-3 py-3 text-sm"
-              key={item}
-            >
-              <input
-                className="mt-1 h-5 w-5 shrink-0 accent-teal-700"
-                type="checkbox"
+      <div className="grid gap-5 lg:grid-cols-3">
+        <article className="resource-tool">
+          <p className="eyebrow">01 / FEE PLANNER</p>
+          <h2>Financial sustainability calculator</h2>
+          <p>
+            A simple planning equation for practice costs and capacity. It is not
+            a market-pricing or clinical recommendation.
+          </p>
+          <div className="mt-5 rounded-xl bg-[#EDF4F1] p-4">
+            <span className="small-copy">CURRENT SCENARIO</span>
+            <strong className="mt-1 block text-2xl text-[#123629]">
+              {fee === null ? "Add capacity" : `₹${fee.toLocaleString("en-IN")}`}
+            </strong>
+            <span className="small-copy">average fee per filled appointment</span>
+          </div>
+          <details className="mt-4">
+            <summary className="flex cursor-pointer items-center gap-2 font-semibold text-[#0F766E]">
+              <Calculator size={17} /> Open planner
+            </summary>
+            <div className="pt-2">
+              <NumberField
+                label="Monthly practice costs (INR)"
+                value={cost}
+                setValue={setCost}
+                min={0}
+                max={10000000}
               />
-              {item}
-            </label>
-          ))}
-        </section>
+              <NumberField
+                label="Target monthly income (INR)"
+                value={income}
+                setValue={setIncome}
+                min={0}
+                max={10000000}
+              />
+              <NumberField
+                label="Available appointments per month"
+                value={slots}
+                setValue={setSlots}
+                min={1}
+                max={2000}
+              />
+              <NumberField
+                label="Expected occupancy (%)"
+                value={occupancy}
+                setValue={setOccupancy}
+                min={1}
+                max={100}
+              />
+              <p className="small-copy">
+                Based on approximately {Math.round(visits)} filled appointments
+                each month, before tax and other personal financial factors.
+              </p>
+            </div>
+          </details>
+        </article>
 
-        <section className="resource-tool">
-          <p className="eyebrow">03 / BETTER CONVERSATIONS</p>
-          <h2>A thoughtful inquiry reply</h2>
+        <article className="resource-tool">
+          <p className="eyebrow">02 / VISIBILITY CHECK</p>
+          <h2>Can patients understand the practice?</h2>
+          <div className="mt-3">
+            {checklist.map((item) => (
+              <label
+                className="flex min-h-11 items-start gap-3 border-b border-[#EDF4F1] py-2.5 text-sm last:border-0"
+                key={item}
+              >
+                <input
+                  className="mt-1 h-4 w-4 shrink-0 accent-teal-700"
+                  type="checkbox"
+                />
+                {item}
+              </label>
+            ))}
+          </div>
+        </article>
+
+        <article className="resource-tool">
+          <p className="eyebrow">03 / INQUIRY REPLY</p>
+          <h2>A clearer first response</h2>
           <p>{script}</p>
           <button
             type="button"
-            className="button secondary"
+            className="button secondary mt-4"
             onClick={async () => {
               try {
                 await copyToClipboard(script);
@@ -206,32 +212,34 @@ export function ResourceTools() {
               Clipboard access is unavailable. Select the text above to copy it.
             </p>
           )}
-        </section>
+        </article>
       </div>
 
-      <section className="resource-tool md:col-span-2">
-        <p className="eyebrow">04 / YOUR WEBSITE</p>
+      <article className="resource-tool mt-5">
+        <p className="eyebrow">04 / WEBSITE CLARITY</p>
         <h2>A page patients can understand</h2>
-        {[
-          [
-            "Introduce your practice",
-            "State your specialty, qualifications, location and the people you can help. Make the page accurate and specific.",
-          ],
-          [
-            "Explain the first visit",
-            "Describe the consultation, duration, fee, what to bring, and how patients can ask questions.",
-          ],
-          [
-            "Make the next step clear",
-            "Provide a working booking route, clinic hours, directions, accessibility information and your cancellation policy.",
-          ],
-        ].map(([title, copy]) => (
-          <details key={title}>
-            <summary>{title}</summary>
-            <p>{copy}</p>
-          </details>
-        ))}
-      </section>
-    </div>
+        <div className="grid gap-x-8 md:grid-cols-3">
+          {[
+            [
+              "Introduce your practice",
+              "State your specialty, qualifications, location and the people you can help. Make the page accurate and specific.",
+            ],
+            [
+              "Explain the first visit",
+              "Describe the consultation, duration, fee, what to bring, and how patients can ask questions.",
+            ],
+            [
+              "Make the next step clear",
+              "Provide a working booking route, clinic hours, directions, accessibility information and your cancellation policy.",
+            ],
+          ].map(([title, copy]) => (
+            <details key={title}>
+              <summary>{title}</summary>
+              <p>{copy}</p>
+            </details>
+          ))}
+        </div>
+      </article>
+    </section>
   );
 }
