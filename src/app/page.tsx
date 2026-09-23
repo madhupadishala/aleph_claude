@@ -34,6 +34,14 @@ const pillars = [
     href: "/resources#calculator",
   },
 ];
+
+const packageLabels: Record<string, string> = {
+  "Aleph Starter": "STARTER FOUNDATION",
+  "Aleph Growth": "FOR YOUR NEXT STAGE",
+  "Aleph Authority": "AUTHORITY BUILDING",
+  "Aleph Concierge": "BESPOKE SUPPORT",
+};
+
 export default function Home() {
   return (
     <main>
@@ -181,7 +189,7 @@ export default function Home() {
               key={pack.name}
             >
               <span className="eyebrow">
-                {pack.featured ? "FOR YOUR NEXT STAGE" : "PRACTICE SUPPORT"}
+                {packageLabels[pack.name] ?? "PRACTICE GROWTH"}
               </span>
               <h3>{pack.name}</h3>
               <p className="price">{pack.price}</p>
