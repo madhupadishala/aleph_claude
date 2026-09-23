@@ -10,6 +10,7 @@ import {
   scoreAnswers,
   type Phase,
 } from "@/lib/aleph/diagnostic";
+import { buildPracticeIntelligencePdf } from "@/lib/aleph/pdf-report";
 
 const phases: Phase[] = [
   "context",
@@ -202,29 +203,11 @@ export default function DiagnosticPage() {
 
   function download() {
     if (!result) return;
-    const text = [
-      "Aleph Practice Intelligence Report",
-      "",
-      `Practice stage: ${result.context.stage}`,
-      `Performance: ${result.context.performance}`,
-      `Capacity: ${result.context.capacity}`,
-      `Typical consultation: ${result.context.consultationTime}`,
-      "",
-      ...result.normalized.map((item) => `${item.label}: ${item.score}%`),
-      "",
-      `Primary constraint: ${result.weakest.label}`,
-      prescriptions[result.weakest.key],
-      "",
-      `Suggested Aleph support: ${result.fit.name}`,
-      result.fit.reason,
-      "",
-      result.operationalInsight,
-      result.affordabilityInsight,
-    ].join("\n");
-    const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+    const bytes = buildPracticeIntelligencePdf(result);
+    const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "aleph-practice-intelligence-report.txt";
+    anchor.download = "aleph-practice-intelligence-report.pdf";
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
@@ -332,6 +315,32 @@ export default function DiagnosticPage() {
                 ))}
               </div>
 
+              <div className="mt-6 rounded-2xl border border-[#DCE6E1] p-4 md:p-5">
+                <div className="mb-4 flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#0F766E]">Practice health profile</p>
+                    <h2 className="mt-1 text-lg font-semibold text-[#123629]">Seven diagnostic dimensions</h2>
+                  </div>
+                  <span className="text-sm font-bold text-[#123629]">{result.overall}/100</span>
+                </div>
+                <div className="grid gap-x-5 gap-y-3 sm:grid-cols-2">
+                  {result.normalized.map((item) => (
+                    <div key={item.key}>
+                      <div className="mb-1 flex items-center justify-between gap-3 text-xs">
+                        <span className="font-semibold text-[#52665e]">{item.label}</span>
+                        <span className="font-bold text-[#123629]">{item.score}%</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-[#EDF4F1]">
+                        <div
+                          className={`h-full rounded-full ${item.score < 45 ? "bg-[#C86745]" : item.score < 70 ? "bg-[#C59A3D]" : "bg-[#0F766E]"}`}
+                          style={{ width: `${Math.max(3, item.score)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="mt-6 space-y-3">
                 {result.priorities.map((priority, index) => (
                   <div key={priority.key} className="flex gap-3 rounded-xl border border-[#DCE6E1] p-4">
@@ -350,7 +359,13 @@ export default function DiagnosticPage() {
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Two key insights</p>
                 <p className="mt-4 text-sm leading-6 text-white/85">{result.operationalInsight}</p>
                 <p className="mt-4 border-t border-white/15 pt-4 text-sm leading-6 text-white/85">{result.affordabilityInsight}</p>
-                <button type="button" onClick={download} className="button secondary mt-5"><Download size={16} /> Download report</button>
+                <button
+                  type="button"
+                  onClick={download}
+                  className="button mt-5 bg-white text-[#123629] shadow-sm hover:bg-[#EDF4F1]"
+                >
+                  <Download size={16} /> Download PDF report
+                </button>
               </div>
 
               <details className="rounded-[1.5rem] border border-[#DCE6E1] bg-white p-5">
