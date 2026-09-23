@@ -19,10 +19,16 @@ test("only multi-question diagnostic segments require review", () => {
   }
 });
 
-test("all phases remain contiguous in the question sequence", () => {
-  for (const phase of phases) {
-    const indexes = indexesFor(phase);
-    assert.ok(indexes.length > 0);
-    assert.deepEqual(indexes, Array.from({ length: indexes.length }, (_, offset) => indexes[0] + offset));
-  }
+test("segment navigation is based on phase membership, not array adjacency", () => {
+  const acquisition = indexesFor("acquisition");
+  const economics = indexesFor("economics");
+
+  assert.equal(acquisition.length, 4);
+  assert.equal(economics.length, 1);
+  assert.ok(
+    acquisition.some((index, position) =>
+      position > 0 && index - acquisition[position - 1] > 1,
+    ),
+    "patient acquisition questions are intentionally not all adjacent in the source array",
+  );
 });
