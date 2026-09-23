@@ -2,13 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Download,
-  RotateCcw,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Download, Pencil, RotateCcw } from "lucide-react";
 import {
   phaseLabels,
   prescriptions,
@@ -16,7 +10,6 @@ import {
   scoreAnswers,
   type Phase,
 } from "@/lib/aleph/diagnostic";
-import { GrowthPlan } from "@/components/GrowthPlan";
 
 const phases: Phase[] = [
   "context",
@@ -26,38 +19,41 @@ const phases: Phase[] = [
   "affordability",
 ];
 
+const questionIndexesFor = (phase: Phase) =>
+  questions
+    .map((question, index) => ({ question, index }))
+    .filter(({ question }) => question.phase === phase)
+    .map(({ index }) => index);
+
 export default function DiagnosticPage() {
   const [answers, setAnswers] = useState<number[]>([]);
   const [step, setStep] = useState(0);
+  const [reviewPhase, setReviewPhase] = useState<Phase | null>(null);
+  const [editingFromReview, setEditingFromReview] = useState<Phase | null>(null);
   const [ready, setReady] = useState(false);
-  const [choice, setChoice] = useState<number | null>(null);
   const [state, setState] = useState("idle");
   const [message, setMessage] = useState("");
   const [requestId, setRequestId] = useState("");
   const heading = useRef<HTMLHeadingElement>(null);
 
-  const complete = answers.length === questions.length && step === questions.length;
+  const complete = answers.length === questions.length && step === questions.length && !reviewPhase;
   const result = complete ? scoreAnswers(answers) : null;
   const currentQuestion = step < questions.length ? questions[step] : null;
+  const currentPhase = currentQuestion?.phase ?? null;
 
   const phaseProgress = useMemo(() => {
     return Object.fromEntries(
       phases.map((phase) => {
-        const indices = questions
-          .map((question, index) => ({ question, index }))
-          .filter(({ question }) => question.phase === phase)
-          .map(({ index }) => index);
-        const completed = indices.filter((index) => index < answers.length).length;
+        const indices = questionIndexesFor(phase);
+        const completed = indices.filter((index) => answers[index] !== undefined).length;
         return [phase, { completed, total: indices.length }];
       }),
     ) as Record<Phase, { completed: number; total: number }>;
-  }, [answers.length]);
+  }, [answers]);
 
   useEffect(() => {
     try {
-      const saved = JSON.parse(
-        sessionStorage.getItem("aleph-practice-intelligence-v1") ?? "null",
-      );
+      const saved = JSON.parse(sessionStorage.getItem("aleph-practice-intelligence-v2") ?? "null");
       if (
         Array.isArray(saved?.answers) &&
         saved.answers.length <= questions.length &&
@@ -70,11 +66,9 @@ export default function DiagnosticPage() {
       ) {
         setAnswers(saved.answers);
         setStep(saved.answers.length);
-        if (typeof saved.requestId === "string") setRequestId(saved.requestId);
       }
-    } catch {
-      // A fresh assessment is fine if session storage is unavailable or invalid.
-    }
+      if (typeof saved?.requestId === "string") setRequestId(saved.requestId);
+    } catch {}
     setRequestId((current) => current || crypto.randomUUID());
     setReady(true);
   }, []);
@@ -83,39 +77,67 @@ export default function DiagnosticPage() {
     if (!ready) return;
     try {
       sessionStorage.setItem(
-        "aleph-practice-intelligence-v1",
+        "aleph-practice-intelligence-v2",
         JSON.stringify({ answers, requestId }),
       );
-    } catch {
-      // Assessment remains usable without persistence.
-    }
+    } catch {}
   }, [answers, ready, requestId]);
 
   useEffect(() => {
     if (ready) heading.current?.focus();
-  }, [step, ready]);
+  }, [step, reviewPhase, ready]);
 
-  function next() {
-    if (choice === null || !currentQuestion) return;
+  function chooseAnswer(optionIndex: number) {
+    if (!currentQuestion) return;
     const updated = [...answers];
-    updated[step] = choice;
-    setAnswers(updated.slice(0, step + 1));
-    setStep(step + 1);
-    setChoice(null);
+    updated[step] = optionIndex;
+    setAnswers(updated);
     setState("idle");
+
+    if (editingFromReview) {
+      const phase = editingFromReview;
+      setEditingFromReview(null);
+      window.setTimeout(() => setReviewPhase(phase), 140);
+      return;
+    }
+
+    const phaseIndices = questionIndexesFor(currentQuestion.phase);
+    const lastInPhase = phaseIndices[phaseIndices.length - 1] === step;
+    window.setTimeout(() => {
+      if (lastInPhase) setReviewPhase(currentQuestion.phase);
+      else setStep(step + 1);
+    }, 140);
+  }
+
+  function editQuestion(index: number, phase: Phase) {
+    setReviewPhase(null);
+    setEditingFromReview(phase);
+    setStep(index);
+  }
+
+  function finalisePhase(phase: Phase) {
+    setReviewPhase(null);
+    const phasePosition = phases.indexOf(phase);
+    const nextPhase = phases[phasePosition + 1];
+    if (!nextPhase) {
+      setStep(questions.length);
+      return;
+    }
+    setStep(questionIndexesFor(nextPhase)[0]);
   }
 
   function previous() {
     if (step === 0) return;
-    const target = step - 1;
-    setStep(target);
-    setChoice(answers[target] ?? null);
+    setEditingFromReview(null);
+    setReviewPhase(null);
+    setStep(step - 1);
   }
 
   function reset() {
     setAnswers([]);
     setStep(0);
-    setChoice(null);
+    setReviewPhase(null);
+    setEditingFromReview(null);
     setState("idle");
     setMessage("");
     setRequestId(crypto.randomUUID());
@@ -129,7 +151,7 @@ export default function DiagnosticPage() {
       `Practice stage: ${result.context.stage}`,
       `Performance: ${result.context.performance}`,
       `Capacity: ${result.context.capacity}`,
-      `Typical clinician-facing consultation time: ${result.context.consultationTime}`,
+      `Typical consultation: ${result.context.consultationTime}`,
       "",
       ...result.normalized.map((item) => `${item.label}: ${item.score}%`),
       "",
@@ -139,13 +161,8 @@ export default function DiagnosticPage() {
       `Suggested Aleph support: ${result.fit.name}`,
       result.fit.reason,
       "",
-      "Operational capacity insight:",
       result.operationalInsight,
-      "",
-      "Patient affordability insight:",
       result.affordabilityInsight,
-      "",
-      "This is a practice self-assessment and operating recommendation, not a clinical standard or prediction of patient growth.",
     ].join("\n");
     const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
     const anchor = document.createElement("a");
@@ -180,340 +197,168 @@ export default function DiagnosticPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to save your report.");
       setState("saved");
-      setMessage(
-        "Your practice intelligence report is saved and queued for email.",
-      );
+      setMessage("Your report is saved and queued for email.");
     } catch (error) {
       setState("error");
-      setMessage(
-        error instanceof Error && error.name !== "TimeoutError"
-          ? error.message
-          : "Connection interrupted. Please try again. Your report is still available to download.",
-      );
+      setMessage(error instanceof Error ? error.message : "Unable to save your report.");
     }
   }
 
   return (
-    <main className="diagnostic-page">
-      <div className="diagnostic-top">
-        <Link href="/" className="text-link">
-          <ArrowLeft size={16} />
-          Back to Aleph
-        </Link>
-        <span>PRACTICE INTELLIGENCE · NOT A FIXED SCORE QUIZ</span>
+    <main className="min-h-[calc(100vh-80px)] bg-[#FBF8F1]">
+      <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-4 md:px-8">
+        <Link href="/" className="text-link"><ArrowLeft size={16} /> Back to Aleph</Link>
+        <span className="hidden text-xs font-bold uppercase tracking-[0.12em] text-[#718078] sm:block">
+          Aleph Practice Intelligence
+        </span>
       </div>
 
       {!ready ? (
-        <div role="status" className="page-wrap">
-          Preparing your practice intelligence assessment...
-        </div>
-      ) : complete && result ? (
-        <div className="report-wrap">
-          <header className="report-header">
+        <div className="mx-auto max-w-3xl px-5 py-16">Preparing your assessment…</div>
+      ) : reviewPhase ? (
+        <section className="mx-auto w-full max-w-3xl px-5 pb-12 pt-3 md:px-8">
+          <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <p className="eyebrow">YOUR PRACTICE INTELLIGENCE REPORT</p>
-              <h1 ref={heading} tabIndex={-1}>
-                Understand what is
-                <br />
-                <em>actually limiting growth.</em>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0F766E]">Review & finalise</p>
+              <h1 ref={heading} tabIndex={-1} className="mt-1 text-3xl font-semibold text-[#123629]">
+                {phaseLabels[reviewPhase]}
               </h1>
-              <p>{prescriptions[result.weakest.key]}</p>
             </div>
-            <div className="score-total">
-              <strong>
-                {result.overall}
-                <span>/100</span>
-              </strong>
-              <span>Current system maturity</span>
-            </div>
-          </header>
+            <span className="rounded-full bg-[#EDF4F1] px-3 py-1 text-xs font-bold text-[#123629]">
+              {phases.indexOf(reviewPhase) + 1} / {phases.length}
+            </span>
+          </div>
 
-          <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {[
-              ["Practice stage", result.context.stage],
-              ["Performance", result.context.performance],
-              ["Appointment capacity", result.context.capacity],
-              ["Typical consultation", result.context.consultationTime],
-            ].map(([label, value]) => (
-              <article
-                key={label}
-                className="rounded-[1.5rem] border border-[#DCE6E1] bg-white p-5"
-              >
-                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#718078]">
-                  {label}
-                </p>
-                <p className="mt-3 text-lg font-semibold leading-6 text-[#123629]">
-                  {value}
-                </p>
-              </article>
-            ))}
-          </section>
-
-          <div className="report-grid mt-6">
-            <section className="scorecard">
-              <p className="eyebrow">SEVEN DIMENSIONS. ONE PRACTICE SYSTEM.</p>
-              <h2>Your intelligence scorecard</h2>
-              {result.normalized.map((item) => (
-                <div className="score-row" key={item.key}>
-                  <div>
-                    <span>{item.label}</span>
-                    <strong>{item.score}%</strong>
+          <div className="overflow-hidden rounded-2xl border border-[#DCE6E1] bg-white">
+            {questionIndexesFor(reviewPhase).map((index) => {
+              const question = questions[index];
+              const selected = question.options[answers[index]];
+              return (
+                <div key={question.id} className="flex items-start justify-between gap-4 border-b border-[#EDF4F1] p-4 last:border-0">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-[#52665e]">{question.prompt}</p>
+                    <p className="mt-1 font-semibold text-[#123629]">{selected?.label}</p>
                   </div>
-                  <meter
-                    min={0}
-                    max={100}
-                    value={item.score}
-                    aria-label={item.label}
-                  />
+                  <button type="button" onClick={() => editQuestion(index, reviewPhase)} className="shrink-0 rounded-lg border border-[#DCE6E1] p-2 text-[#0F766E]" aria-label={`Edit ${question.prompt}`}>
+                    <Pencil size={16} />
+                  </button>
                 </div>
-              ))}
-              <p className="small-copy">
-                Scores describe the operating system reported in this assessment.
-                They are not clinical quality ratings or revenue forecasts.
-              </p>
-            </section>
+              );
+            })}
+          </div>
 
-            <aside className="fit-panel">
-              <p className="eyebrow">YOUR SUGGESTED ALEPH STARTING POINT</p>
-              <h2>{result.fit.name}</h2>
-              <p>{result.fit.copy}</p>
-              <div className="mt-5 rounded-xl border border-white/20 p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.12em] opacity-70">
-                  Why this fit
-                </p>
-                <p className="mt-2 text-sm leading-6">{result.fit.reason}</p>
+          <button type="button" onClick={() => finalisePhase(reviewPhase)} className="button primary mt-5 w-full justify-center sm:w-auto">
+            Finalise & continue <ArrowRight size={17} />
+          </button>
+        </section>
+      ) : complete && result ? (
+        <section className="mx-auto w-full max-w-5xl px-5 pb-14 pt-3 md:px-8">
+          <div className="grid gap-5 lg:grid-cols-[1.25fr_.75fr]">
+            <div className="rounded-[1.75rem] bg-white p-6 shadow-sm md:p-8">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0F766E]">Your practice intelligence</p>
+              <h1 ref={heading} tabIndex={-1} className="mt-2 text-4xl font-semibold leading-tight text-[#123629]">{result.fit.name}</h1>
+              <p className="mt-3 max-w-2xl leading-7 text-[#52665e]">{result.fit.copy}</p>
+              <p className="mt-4 rounded-xl bg-[#EDF4F1] p-4 text-sm leading-6 text-[#123629]">{result.fit.reason}</p>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  ["Stage", result.context.stage],
+                  ["Performance", result.context.performance],
+                  ["Capacity", result.context.capacity],
+                  ["Consultation", result.context.consultationTime],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-xl border border-[#DCE6E1] p-3">
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-[#718078]">{label}</span>
+                    <p className="mt-1 text-sm font-semibold text-[#123629]">{value}</p>
+                  </div>
+                ))}
               </div>
-              <Link className="button secondary mt-5" href="/pricing">
-                Explore this support <ArrowRight size={17} />
-              </Link>
-              <button type="button" onClick={download} className="text-link">
-                <Download size={17} />
-                Download report
-              </button>
+
+              <div className="mt-6 space-y-3">
+                {result.priorities.map((priority, index) => (
+                  <div key={priority.key} className="flex gap-3 rounded-xl border border-[#DCE6E1] p-4">
+                    <span className="font-bold text-[#C86745]">0{index + 1}</span>
+                    <div><strong className="text-[#123629]">{priority.label}</strong><p className="mt-1 text-sm leading-6 text-[#52665e]">{prescriptions[priority.key]}</p></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <aside className="space-y-4">
+              <div className="rounded-[1.75rem] bg-[#123629] p-6 text-white">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Two key insights</p>
+                <p className="mt-4 text-sm leading-6 text-white/85">{result.operationalInsight}</p>
+                <p className="mt-4 border-t border-white/15 pt-4 text-sm leading-6 text-white/85">{result.affordabilityInsight}</p>
+                <button type="button" onClick={download} className="button secondary mt-5"><Download size={16} /> Download report</button>
+              </div>
+
+              <details className="rounded-[1.5rem] border border-[#DCE6E1] bg-white p-5">
+                <summary className="cursor-pointer font-semibold text-[#123629]">Email me this report</summary>
+                <form onSubmit={save} className="mt-4 space-y-3">
+                  <input className="w-full rounded-lg border border-[#DCE6E1] p-3" name="name" placeholder="Name (optional)" maxLength={120} />
+                  <input className="w-full rounded-lg border border-[#DCE6E1] p-3" name="specialty" placeholder="Clinical specialty" minLength={2} maxLength={120} required />
+                  <input className="w-full rounded-lg border border-[#DCE6E1] p-3" name="email" type="email" placeholder="Email" required />
+                  <input name="website" tabIndex={-1} autoComplete="off" className="hidden" />
+                  <label className="flex gap-2 text-xs text-[#52665e]"><input name="reportConsent" type="checkbox" required /> Save my assessment and email this report.</label>
+                  <label className="flex gap-2 text-xs text-[#52665e]"><input name="marketingConsent" type="checkbox" /> Send optional Aleph educational updates.</label>
+                  <button className="button primary w-full justify-center" disabled={state === "saving" || state === "saved"}>{state === "saving" ? "Saving…" : state === "saved" ? "Report saved" : "Email my report"}</button>
+                  {message && <p className="text-xs" role="status">{message}</p>}
+                </form>
+              </details>
+
+              <button type="button" onClick={reset} className="text-link"><RotateCcw size={16} /> Start again</button>
             </aside>
           </div>
-
-          <section className="mt-6 grid gap-5 lg:grid-cols-2">
-            <article className="rounded-[2rem] border border-[#DCE6E1] bg-white p-7">
-              <p className="eyebrow">OPERATIONAL CAPACITY</p>
-              <h2 className="text-2xl font-semibold text-[#123629]">
-                Protect clinician time without rushing care.
-              </h2>
-              <p className="mt-4 leading-7 text-[#52665e]">
-                {result.operationalInsight}
-              </p>
-            </article>
-            <article className="rounded-[2rem] border border-[#DCE6E1] bg-white p-7">
-              <p className="eyebrow">PATIENT AFFORDABILITY</p>
-              <h2 className="text-2xl font-semibold text-[#123629]">
-                Look beyond the consultation fee.
-              </h2>
-              <p className="mt-4 leading-7 text-[#52665e]">
-                {result.affordabilityInsight}
-              </p>
-            </article>
-          </section>
-
-          <section className="mt-6 rounded-[2rem] bg-[#EDF4F1] p-7 md:p-9">
-            <p className="eyebrow">TOP THREE PRIORITIES</p>
-            <div className="mt-5 grid gap-4 md:grid-cols-3">
-              {result.priorities.map((priority, index) => (
-                <article key={priority.key} className="rounded-2xl bg-white p-5">
-                  <span className="text-xs font-bold text-[#C86745]">
-                    0{index + 1}
-                  </span>
-                  <h3 className="mt-3 text-xl font-semibold text-[#123629]">
-                    {priority.label}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-[#52665e]">
-                    {prescriptions[priority.key]}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <GrowthPlan key={result.weakest.key} dimension={result.weakest.key} />
-
-          <div className="save-report">
-            <div>
-              <p className="eyebrow">KEEP YOUR REPORT</p>
-              <h2>
-                Your practice intelligence.
-                <br />
-                Ready when you are.
-              </h2>
-              <p>
-                Save a copy and have it emailed to you. Your contact details are
-                only required if you choose to save the report.
-              </p>
-              <Link href="/privacy" className="text-link">
-                How we handle your information
-              </Link>
-            </div>
-            <form onSubmit={save}>
-              <label className="field">
-                Name (optional)
-                <input name="name" autoComplete="name" maxLength={120} />
-              </label>
-              <label className="field">
-                Clinical specialty
-                <input
-                  name="specialty"
-                  maxLength={120}
-                  minLength={2}
-                  placeholder="e.g. General physician"
-                  required
-                />
-              </label>
-              <label className="field">
-                Email address
-                <input
-                  name="email"
-                  autoComplete="email"
-                  type="email"
-                  maxLength={254}
-                  required
-                />
-              </label>
-              <div className="honeypot" aria-hidden="true">
-                <label>
-                  Website
-                  <input name="website" tabIndex={-1} autoComplete="off" />
-                </label>
-              </div>
-              <label className="consent-line">
-                <input name="reportConsent" type="checkbox" required />I agree
-                to Aleph storing my details and assessment to save and email
-                this report.
-              </label>
-              <label className="consent-line">
-                <input name="marketingConsent" type="checkbox" />
-                Also send me the optional educational series. I can unsubscribe
-                anytime.
-              </label>
-              <button
-                className="button primary"
-                disabled={state === "saving" || state === "saved"}
-              >
-                {state === "saving"
-                  ? "Saving your report..."
-                  : state === "saved"
-                    ? "Report saved"
-                    : "Save and email my report"}
-                <ArrowRight size={17} />
-              </button>
-              {message && (
-                <p
-                  role="status"
-                  className={state === "error" ? "form-error" : "form-success"}
-                >
-                  {message}
-                </p>
-              )}
-            </form>
+        </section>
+      ) : currentQuestion ? (
+        <section className="mx-auto w-full max-w-3xl px-5 pb-10 pt-1 md:px-8">
+          <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-1">
+            {phases.map((phase, index) => {
+              const progress = phaseProgress[phase];
+              const active = currentPhase === phase;
+              const done = progress.completed === progress.total;
+              return (
+                <div key={phase} className={`flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${active ? "bg-[#123629] text-white" : done ? "bg-[#EDF4F1] text-[#0F766E]" : "bg-white text-[#718078]"}`}>
+                  {done ? <Check size={13} /> : index + 1} {phaseLabels[phase]}
+                </div>
+              );
+            })}
           </div>
 
-          <button type="button" onClick={reset} className="text-link">
-            <RotateCcw size={16} />
-            Start a fresh assessment
-          </button>
-        </div>
-      ) : currentQuestion ? (
-        <div className="quiz-layout">
-          <aside className="quiz-aside">
-            <p className="eyebrow">ALEPH PRACTICE INTELLIGENCE</p>
-            <h1>
-              Diagnose the
-              <br />
-              <em>practice system.</em>
+          <div className="rounded-[1.75rem] border border-[#DCE6E1] bg-white p-5 shadow-sm md:p-7">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#0F766E]">{currentQuestion.eyebrow}</span>
+              <span className="text-xs font-semibold text-[#718078]">{step + 1}/{questions.length}</span>
+            </div>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#EDF4F1]"><div className="h-full bg-[#0F766E]" style={{ width: `${((step + 1) / questions.length) * 100}%` }} /></div>
+
+            <h1 ref={heading} tabIndex={-1} className="mt-6 text-2xl font-semibold leading-snug text-[#123629] md:text-3xl">
+              {currentQuestion.prompt}
             </h1>
-            <p>
-              Practice age is not practice health. We look at context, demand,
-              capacity, patient experience, operations, and affordability before
-              suggesting an Aleph product.
-            </p>
-            <ol>
-              {phases.map((phase, index) => {
-                const progress = phaseProgress[phase];
-                const active = currentQuestion.phase === phase;
-                const done = progress.completed === progress.total;
+
+            <div className="mt-5 grid gap-2.5">
+              {currentQuestion.options.map((option, index) => {
+                const selected = answers[step] === index;
                 return (
-                  <li key={phase} className={active ? "active" : done ? "done" : ""}>
-                    <span>{done ? <Check size={13} /> : index + 1}</span>
-                    {phaseLabels[phase]}
-                  </li>
+                  <button
+                    key={option.label}
+                    type="button"
+                    onClick={() => chooseAnswer(index)}
+                    className={`w-full rounded-xl border p-4 text-left transition ${selected ? "border-[#0F766E] bg-[#EDF4F1]" : "border-[#DCE6E1] bg-white hover:border-[#8FA69A] hover:bg-[#FDFCF9]"}`}
+                  >
+                    <span className="block font-semibold leading-5 text-[#123629]">{option.label}</span>
+                    {option.detail && <span className="mt-1 block text-sm leading-5 text-[#66766f]">{option.detail}</span>}
+                  </button>
                 );
               })}
-            </ol>
-            <p className="small-copy">
-              No patient-identifiable information is requested.
-            </p>
-          </aside>
+            </div>
 
-          <section className="quiz-main">
-            <div className="quiz-progress">
-              <span>
-                QUESTION {step + 1} OF {questions.length}
-              </span>
-              <span>{Math.round((step / questions.length) * 100)}% complete</span>
+            <div className="mt-5 flex items-center justify-between gap-4 border-t border-[#EDF4F1] pt-4">
+              <button type="button" onClick={previous} disabled={step === 0} className="text-link disabled:opacity-30"><ArrowLeft size={15} /> Previous</button>
+              <p className="text-right text-xs leading-5 text-[#718078]">Select an answer to continue automatically.</p>
             </div>
-            <progress
-              value={step}
-              max={questions.length}
-              aria-label="Practice intelligence progress"
-            />
-            <p className="eyebrow mt-8">{currentQuestion.eyebrow}</p>
-            <h2 ref={heading} tabIndex={-1}>
-              {currentQuestion.prompt}
-            </h2>
-            <fieldset>
-              <legend className="sr-only">
-                Choose the answer that best describes your practice
-              </legend>
-              {currentQuestion.options.map((option, index) => (
-                <label
-                  key={option.label}
-                  className={"quiz-option " + (choice === index ? "selected" : "")}
-                >
-                  <input
-                    type="radio"
-                    name="answer"
-                    checked={choice === index}
-                    onChange={() => setChoice(index)}
-                  />
-                  <span>
-                    <strong>{option.label}</strong>
-                    <small>{option.detail}</small>
-                  </span>
-                </label>
-              ))}
-            </fieldset>
-            <div className="quiz-controls">
-              <button
-                type="button"
-                className="button secondary"
-                disabled={step === 0}
-                onClick={previous}
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                className="button primary"
-                disabled={choice === null}
-                onClick={next}
-              >
-                {step === questions.length - 1 ? "Build my intelligence report" : "Continue"}
-                <ArrowRight size={17} />
-              </button>
-            </div>
-            <p className="small-copy">
-              Aleph does not use one global consultation-time target. Context is
-              interpreted together with demand, workflow, and practice goals.
-            </p>
-          </section>
-        </div>
+          </div>
+        </section>
       ) : null}
     </main>
   );
