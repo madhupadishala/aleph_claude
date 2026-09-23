@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prepare:founder-image": "node scripts/materialize-founder-image.mjs",
+    "predev": "npm run prepare:founder-image",
     "dev": "next dev",
+    "prebuild": "npm run prepare:founder-image",
     "build": "next build",
     "start": "next start",
     "lint": "eslint src --max-warnings=0",
