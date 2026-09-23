@@ -35,7 +35,10 @@ export default function ResourcesPage() {
             </p>
           </div>
           <div className="lg:text-right">
-            <Link className="button secondary" href="/diagnostic">
+            <Link
+              className="button bg-white text-[#123629] shadow-sm hover:bg-[#EDF4F1]"
+              href="/diagnostic"
+            >
               Build my intelligence report <ArrowUpRight size={18} />
             </Link>
             <p className="mt-3 text-xs leading-5 text-white/60">
