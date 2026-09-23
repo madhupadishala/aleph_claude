@@ -1,298 +1,322 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  ArrowDown,
   ArrowUpRight,
   BadgeCheck,
+  CircleDollarSign,
   Clock3,
+  Compass,
   HeartHandshake,
-  LineChart,
   Search,
   ShieldCheck,
   Sparkles,
   Stethoscope,
   Users,
+  Workflow,
 } from "lucide-react";
 
 export const metadata = {
   title: "About Aleph",
   description:
-    "Meet Dr. Wany and learn why Aleph was built to help doctors grow stronger, more visible, and more sustainable practices.",
+    "Meet Dr. Wany and discover why Aleph was built to help independent clinicians grow visible, trusted, well-run practices.",
   alternates: { canonical: "/about" },
 };
 
 const proof = [
-  { value: "7 years", label: "Clinical experience", icon: Stethoscope },
+  { value: "7+ years", label: "Clinical experience", icon: Stethoscope },
   { value: "50+", label: "Doctors & clinics supported", icon: Users },
   { value: "Doctor-led", label: "Built from inside healthcare", icon: HeartHandshake },
-  { value: "Compliance-first", label: "Growth with trust protected", icon: ShieldCheck },
+  { value: "Compliance-first", label: "Trust before tactics", icon: ShieldCheck },
 ];
 
-const problems = [
-  "Excellent doctors who were difficult to discover.",
-  "Established clinics with unused appointment capacity.",
-  "Doctors depending almost completely on referrals.",
-  "Practices receiving inquiries but losing patients before consultation.",
-  "Clinicians spending valuable time on work outside clinical decision-making.",
-  "Doctors who wanted to grow without compromising the trust they had built.",
+const observations = [
+  {
+    number: "01",
+    title: "Good doctors can still be hard to find.",
+    copy: "Strong clinical work does not automatically translate into visibility, positioning, or patient understanding.",
+  },
+  {
+    number: "02",
+    title: "More enquiries do not always mean more growth.",
+    copy: "A practice can receive interest and still lose patients through unclear communication, weak follow-up, or a poor booking journey.",
+  },
+  {
+    number: "03",
+    title: "A busy practice can still be badly designed.",
+    copy: "When the doctor becomes the marketing team, follow-up desk, operations manager, and problem-solver, growth starts costing clinical time.",
+  },
 ];
 
-const dimensions = [
-  ["Local Visibility", "Can the right patients find you?", Search],
-  ["Patient Trust", "Can they understand why they should choose you?", BadgeCheck],
-  ["Patient Journey", "Does an inquiry smoothly become an appointment and follow-up?", Users],
-  ["Pricing Confidence", "Can your value be communicated without reactive discounting?", LineChart],
-  ["Operational Capacity", "Is the clinician's time being used where it matters most?", Clock3],
-  ["Patient Affordability", "Does the overall cost of care feel transparent and reasonable?", HeartHandshake],
-  ["Clinical Authority", "What do patients remember you for?", Sparkles],
+const practiceLens = [
+  ["Visibility", "Can the right patients find you?", Search],
+  ["Trust", "Do they understand why they should choose you?", BadgeCheck],
+  ["Pricing", "Can your value be communicated with confidence?", CircleDollarSign],
+  ["Patient journey", "Does enquiry become appointment and follow-up smoothly?", Users],
+  ["Capacity", "Is the clinician's time being used where it matters most?", Clock3],
+  ["Affordability", "Does the overall care experience feel transparent and reasonable?", HeartHandshake],
+  ["Authority", "What do patients remember you for?", Sparkles],
 ] as const;
+
+const principles = [
+  {
+    icon: HeartHandshake,
+    title: "Healthcare first.",
+    copy: "A clinic is not just another local business. Trust, reputation, patient experience, and clinical judgement come first.",
+  },
+  {
+    icon: Compass,
+    title: "Clarity before activity.",
+    copy: "We would rather understand the real constraint first than add more campaigns, tools, or noise to the practice.",
+  },
+  {
+    icon: Workflow,
+    title: "Build systems, not dependence.",
+    copy: "The goal is a practice that becomes easier to find, easier to trust, and easier to run — without the doctor doing everything.",
+  },
+];
 
 export default function AboutPage() {
   return (
-    <main className="page-wrap">
-      <section className="grid gap-8 pt-5 lg:grid-cols-[1.08fr_.92fr] lg:items-stretch">
-        <div className="rounded-[2.4rem] bg-[#123629] p-7 text-white md:p-10 lg:p-12">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#C59A3D]">
-            A NOTE FROM OUR FOUNDER
-          </p>
-          <h1 className="mt-5 text-5xl leading-[0.98] md:text-6xl">I&apos;m Dr. Wany.</h1>
-          <p className="mt-6 max-w-2xl text-xl leading-8 text-white/80 md:text-2xl">
-            Clinical practice taught me something very clearly:
-          </p>
-          <p className="mt-7 max-w-3xl text-3xl font-semibold leading-tight md:text-4xl">
-            Great doctors do not always build great practices.
-          </p>
-          <p className="mt-5 max-w-2xl leading-7 text-white/70">
-            Not because they lack clinical expertise. But because building a
-            practice demands much more than treating patients.
-          </p>
-
-          <div className="mt-8 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-            {["Visibility", "Patient trust", "Pricing", "Follow-up", "Team coordination", "Reputation", "Operations", "Growth"].map(
-              (item) => (
-                <span
-                  key={item}
-                  className="rounded-full border border-white/15 bg-white/5 px-3 py-2 text-center text-white/85"
-                >
-                  {item}
-                </span>
-              ),
-            )}
-          </div>
-
-          <p className="mt-8 text-lg font-medium text-white">
-            And most doctors were never trained for any of that.
-          </p>
-        </div>
-
-        <aside className="overflow-hidden rounded-[2.4rem] border border-[#DCE6E1] bg-[#EDF4F1]">
-          <div className="relative mx-auto aspect-square w-full max-w-[360px] bg-white sm:mt-6 sm:rounded-[1.8rem] lg:mt-7">
-            <Image
-              src="/images/dr-wany-founder.jpg"
-              alt="Dr. Wany, Founder of Aleph"
-              fill
-              sizes="(max-width: 1024px) 90vw, 360px"
-              className="object-cover sm:rounded-[1.8rem]"
-              priority
-            />
-          </div>
-
-          <div className="p-7 md:p-10">
-            <div className="mb-7 flex items-end justify-between gap-4 border-b border-[#DCE6E1] pb-5">
+    <main>
+      <section className="mx-auto max-w-[1440px] px-4 pt-5 sm:px-6 lg:px-8">
+        <div className="overflow-hidden rounded-[2.6rem] bg-[#FBF8F1] ring-1 ring-[#DCE6E1]">
+          <div className="grid lg:min-h-[680px] lg:grid-cols-[1.02fr_.98fr]">
+            <div className="flex flex-col justify-between p-7 md:p-10 lg:p-14 xl:p-16">
               <div>
-                <p className="text-xl font-semibold text-[#123629]">Dr. Wany</p>
-                <p className="mt-1 text-sm text-[#607169]">Founder, Aleph</p>
+                <p className="eyebrow">ABOUT ALEPH</p>
+                <h1 className="mt-5 max-w-3xl text-5xl leading-[.96] text-[#123629] md:text-6xl lg:text-7xl">
+                  Hi, I&apos;m Dr. Wany.
+                </h1>
+                <p className="mt-7 max-w-2xl text-2xl font-semibold leading-9 text-[#123629] md:text-3xl md:leading-10">
+                  I built Aleph because good doctors should not have to become marketers to build a strong practice.
+                </p>
+                <p className="mt-6 max-w-2xl text-base leading-8 text-[#52665e] md:text-lg">
+                  Clinical practice showed me something very clearly: caring for patients and growing a practice are two different jobs. Doctors are trained deeply for one — and are often left to figure out the other on their own.
+                </p>
+                <p className="mt-4 max-w-2xl text-base leading-8 text-[#52665e] md:text-lg">
+                  That gap stayed with me. Aleph started from there.
+                </p>
               </div>
-              <span className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-[#0F766E]">
-                Clinician &amp; founder
-              </span>
+
+              <div className="mt-10 flex flex-wrap items-center gap-3">
+                <Link href="#why-aleph" className="button primary">
+                  Why Aleph exists <ArrowDown size={17} />
+                </Link>
+                <Link href="/diagnostic" className="button secondary">
+                  Find my growth plan <ArrowUpRight size={17} />
+                </Link>
+              </div>
             </div>
 
-            <p className="eyebrow">WHY ALEPH STARTED</p>
-            <h2 className="mt-4 text-4xl leading-tight text-[#123629] md:text-5xl">
-              That is why I built Aleph.
-            </h2>
-            <p className="mt-6 text-base leading-8 text-[#41554d]">
-              My work inside healthcare has kept me close to patients, families,
-              clinical teams, and the everyday realities of medical practice.
-            </p>
-            <p className="mt-4 text-base leading-8 text-[#41554d]">
-              Over time, I started seeing the same problems repeatedly.
-            </p>
-
-            <div className="mt-8 rounded-[1.6rem] bg-white p-5">
-              <p className="text-sm leading-6 text-[#52665e]">
-                Aleph started from one simple question:
-              </p>
-              <p className="mt-2 text-2xl font-semibold leading-snug text-[#123629]">
-                What is actually stopping this practice from growing?
-              </p>
+            <div className="relative min-h-[520px] bg-[#EDF4F1] lg:min-h-full">
+              <Image
+                src="/images/dr-wany-founder.jpg"
+                alt="Dr. Wany, Founder of Aleph"
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-x-5 bottom-5 rounded-[1.6rem] border border-white/70 bg-white/90 p-5 shadow-[0_18px_60px_rgba(18,54,41,.18)] backdrop-blur md:inset-x-7 md:bottom-7 md:p-6">
+                <p className="text-lg font-semibold text-[#123629]">Dr. Wany</p>
+                <p className="mt-1 text-sm text-[#607169]">Founder, Aleph</p>
+                <p className="mt-4 border-t border-[#DCE6E1] pt-4 text-sm leading-6 text-[#41554d]">
+                  “The practice should grow around the doctor — not consume the doctor.”
+                </p>
+              </div>
             </div>
           </div>
-        </aside>
-      </section>
 
-      <section className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {proof.map(({ value, label, icon: Icon }) => (
-          <article key={value} className="rounded-2xl border border-[#DCE6E1] bg-white p-5">
-            <Icon size={22} className="text-[#0F766E]" />
-            <p className="mt-4 text-2xl font-semibold text-[#123629]">{value}</p>
-            <p className="mt-1 text-sm leading-6 text-[#607169]">{label}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="section-wrap grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
-        <div className="lg:sticky lg:top-28">
-          <p className="eyebrow">WHAT I KEPT SEEING</p>
-          <h2 className="mt-3 text-4xl leading-tight md:text-5xl">
-            The problem was rarely just marketing.
-          </h2>
-          <p className="mt-5 max-w-md leading-7 text-[#52665e]">
-            Different practices were struggling for completely different reasons.
-            That is where the idea behind Aleph became clearer.
-          </p>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          {problems.map((problem, index) => (
-            <article
-              key={problem}
-              className="rounded-[1.6rem] border border-[#DCE6E1] bg-white p-5 md:p-6"
-            >
-              <span className="text-xs font-bold text-[#C86745]">0{index + 1}</span>
-              <p className="mt-3 text-lg font-semibold leading-7 text-[#123629]">{problem}</p>
-            </article>
-          ))}
+          <div className="grid border-t border-[#DCE6E1] bg-white sm:grid-cols-2 lg:grid-cols-4">
+            {proof.map(({ value, label, icon: Icon }, index) => (
+              <div
+                key={value}
+                className={`flex items-center gap-4 px-6 py-5 ${index !== 0 ? "border-t border-[#DCE6E1] sm:border-t-0 sm:border-l" : ""} ${index === 2 ? "sm:border-t lg:border-t-0" : ""}`}
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EDF4F1] text-[#0F766E]">
+                  <Icon size={19} />
+                </span>
+                <div>
+                  <p className="font-semibold text-[#123629]">{value}</p>
+                  <p className="mt-1 text-xs leading-5 text-[#607169]">{label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="section-wrap rounded-[2.4rem] bg-[#123629] p-7 text-white md:p-10 lg:p-12">
-        <div className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-center">
+      <section id="why-aleph" className="section-wrap scroll-mt-28">
+        <div className="grid gap-10 lg:grid-cols-[.72fr_1.28fr] lg:items-start">
+          <div className="lg:sticky lg:top-28">
+            <p className="eyebrow">WHAT I KEPT SEEING</p>
+            <h2 className="mt-4 max-w-lg text-4xl leading-tight md:text-5xl">
+              The problem was rarely just marketing.
+            </h2>
+            <p className="mt-6 max-w-md text-base leading-8 text-[#52665e]">
+              I kept seeing clinically strong doctors working harder than they needed to — while the practice around them remained difficult to discover, difficult to manage, or difficult to grow.
+            </p>
+          </div>
+
+          <div className="grid gap-4">
+            {observations.map((item) => (
+              <article
+                key={item.number}
+                className="grid gap-5 rounded-[2rem] border border-[#DCE6E1] bg-white p-6 md:grid-cols-[90px_1fr] md:p-8"
+              >
+                <span className="text-4xl font-semibold text-[#C86745]">{item.number}</span>
+                <div>
+                  <h3 className="text-2xl font-semibold leading-8 text-[#123629]">{item.title}</h3>
+                  <p className="mt-3 max-w-2xl leading-7 text-[#607169]">{item.copy}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#123629] text-white">
+        <div className="section-wrap grid gap-10 py-16 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:py-24">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#C59A3D]">
-              TODAY
+              THE QUESTION CHANGED
             </p>
-            <p className="mt-4 text-6xl font-semibold leading-none">50+</p>
-            <p className="mt-3 text-xl leading-7 text-white/80">doctors and clinics supported</p>
+            <h2 className="mt-5 max-w-2xl text-4xl leading-tight md:text-6xl">
+              We do not begin with advertising.
+            </h2>
           </div>
           <div>
-            <h2 className="text-3xl leading-tight md:text-4xl">
-              We have helped doctors and clinics move forward with greater clarity and confidence.
-            </h2>
-            <p className="mt-5 max-w-3xl leading-7 text-white/75">
-              Not simply by bringing more leads. But by helping practices strengthen
-              the systems behind growth.
+            <p className="text-lg leading-8 text-white/70">
+              The first question is not “How do we get you more leads?”
             </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {["Better visibility", "Stronger patient trust", "Clearer positioning", "Structured patient journeys", "Better follow-up", "More confident growth"].map(
-                (item) => (
-                  <span key={item} className="rounded-full bg-white/10 px-4 py-2 text-sm text-white/90">
-                    {item}
-                  </span>
-                ),
-              )}
-            </div>
-            <p className="mt-6 font-medium text-white">
-              Because growth becomes sustainable only when the practice itself is ready for it.
+            <p className="mt-4 text-3xl font-semibold leading-tight md:text-4xl">
+              What is actually stopping this practice from growing?
+            </p>
+            <p className="mt-6 max-w-2xl leading-8 text-white/70">
+              For one doctor, the answer may be visibility. For another, trust. For another, pricing, follow-up, capacity, or the way the whole patient journey is organised. Different problems need different answers.
             </p>
           </div>
-        </div>
-      </section>
-
-      <section className="section-wrap text-center">
-        <p className="eyebrow">WE DO NOT BEGIN WITH ADVERTISING</p>
-        <h2 className="mx-auto mt-4 max-w-4xl text-4xl leading-tight md:text-6xl">
-          What is actually stopping your practice from growing?
-        </h2>
-        <div className="mx-auto mt-8 flex max-w-4xl flex-wrap justify-center gap-2">
-          {["Visibility", "Patient trust", "Pricing", "Conversion", "Retention", "Capacity", "Clinician time"].map(
-            (item) => (
-              <span
-                key={item}
-                className="rounded-full border border-[#DCE6E1] bg-white px-4 py-2 text-sm font-semibold text-[#123629]"
-              >
-                {item}
-              </span>
-            ),
-          )}
-        </div>
-        <p className="mx-auto mt-7 max-w-2xl text-lg leading-8 text-[#52665e]">
-          These are completely different problems. They should not receive the same solution.
-        </p>
-      </section>
-
-      <section className="section-wrap grid gap-8 lg:grid-cols-2 lg:items-center">
-        <div className="rounded-[2rem] bg-[#EDF4F1] p-7 md:p-10">
-          <p className="eyebrow">BUILT FROM INSIDE HEALTHCARE</p>
-          <h2 className="mt-4 text-4xl leading-tight text-[#123629] md:text-5xl">Aleph is doctor-led.</h2>
-          <p className="mt-6 leading-8 text-[#41554d]">
-            That changes the way we look at growth. We do not see a clinic simply
-            as a business that needs more customers.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {["Trust matters.", "Patient experience matters.", "Clinical reputation matters.", "Time matters."].map(
-            (item) => (
-              <div key={item} className="flex min-h-36 items-end rounded-[1.6rem] border border-[#DCE6E1] bg-white p-5">
-                <p className="text-xl font-semibold leading-7 text-[#123629]">{item}</p>
-              </div>
-            ),
-          )}
         </div>
       </section>
 
       <section className="section-wrap">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">MORE THAN MARKETING</p>
-            <h2>Practices do not need more activity. They need better decisions.</h2>
+            <p className="eyebrow">THE WHOLE PRACTICE</p>
+            <h2>Growth makes more sense when you stop looking at one metric.</h2>
           </div>
           <p>
-            Working with 50+ doctors and clinics has reinforced why we look beyond advertising.
+            Aleph looks at the practice as a connected system — not a collection of campaigns.
           </p>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {dimensions.map(([title, copy, Icon], index) => (
-            <article key={title} className="rounded-[1.6rem] border border-[#DCE6E1] bg-white p-5 md:p-6">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {practiceLens.map(([title, copy, Icon], index) => (
+            <article
+              key={title}
+              className={`rounded-[1.7rem] border p-5 md:p-6 ${index === 0 ? "border-[#123629] bg-[#123629] text-white" : "border-[#DCE6E1] bg-white"}`}
+            >
               <div className="flex items-center justify-between">
-                <Icon size={22} className="text-[#0F766E]" />
-                <span className="text-xs font-bold text-[#C86745]">0{index + 1}</span>
+                <Icon size={21} className={index === 0 ? "text-[#C59A3D]" : "text-[#0F766E]"} />
+                <span className={`text-xs font-bold ${index === 0 ? "text-white/45" : "text-[#C86745]"}`}>0{index + 1}</span>
               </div>
-              <h3 className="mt-5 text-xl font-semibold text-[#123629]">{title}</h3>
-              <p className="mt-2 text-sm leading-6 text-[#607169]">{copy}</p>
+              <h3 className={`mt-7 text-xl font-semibold ${index === 0 ? "text-white" : "text-[#123629]"}`}>
+                {title}
+              </h3>
+              <p className={`mt-3 text-sm leading-6 ${index === 0 ? "text-white/70" : "text-[#607169]"}`}>
+                {copy}
+              </p>
             </article>
           ))}
+
+          <article className="flex min-h-48 flex-col justify-between rounded-[1.7rem] bg-[#C59A3D] p-6 text-[#123629]">
+            <Sparkles size={22} />
+            <p className="mt-8 text-2xl font-semibold leading-8">
+              More leads are useful only when the practice is ready for them.
+            </p>
+          </article>
         </div>
       </section>
 
-      <section className="section-wrap rounded-[2.4rem] border border-[#DCE6E1] bg-white p-7 md:p-10 lg:p-12">
-        <div className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-center">
-          <div>
-            <p className="eyebrow">MY BELIEF IS SIMPLE</p>
-            <p className="mt-4 text-lg leading-8 text-[#52665e]">
-              Doctors should not have to become marketers to build successful practices.
-            </p>
-          </div>
-          <div>
-            <h2 className="text-4xl leading-tight text-[#123629] md:text-5xl">
-              Practices that are easier to find. Easier to trust. Easier to run. And strong enough to grow confidently.
-            </h2>
+      <section className="section-wrap pt-0">
+        <div className="rounded-[2.5rem] bg-[#EDF4F1] p-7 md:p-10 lg:p-14">
+          <div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr]">
+            <div>
+              <p className="eyebrow">WHAT ALEPH STANDS FOR</p>
+              <h2 className="mt-4 text-4xl leading-tight text-[#123629] md:text-5xl">
+                Thoughtful growth. Without losing what makes healthcare different.
+              </h2>
+            </div>
+            <div className="grid gap-3">
+              {principles.map(({ icon: Icon, title, copy }) => (
+                <article key={title} className="rounded-[1.6rem] bg-white p-6 md:p-7">
+                  <div className="flex gap-4">
+                    <span className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FBF8F1] text-[#0F766E]">
+                      <Icon size={19} />
+                    </span>
+                    <div>
+                      <h3 className="text-xl font-semibold text-[#123629]">{title}</h3>
+                      <p className="mt-2 leading-7 text-[#607169]">{copy}</p>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
+      </section>
 
-        <div className="mt-10 rounded-[2rem] bg-[#FBF8F1] p-6 md:p-8">
-          <p className="max-w-4xl text-2xl font-semibold leading-9 text-[#123629] md:text-3xl md:leading-10">
-            “I did not build Aleph to make doctors better marketers. I built it to help doctors build better practices.”
-          </p>
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#DCE6E1] pt-5">
-            <div>
-              <p className="font-semibold text-[#123629]">Dr. Wany</p>
-              <p className="text-sm text-[#607169]">Founder, Aleph</p>
+      <section className="section-wrap pt-0">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <article className="rounded-[2.2rem] border border-[#DCE6E1] bg-white p-7 md:p-10">
+            <p className="eyebrow">OUR MISSION</p>
+            <h2 className="mt-5 text-3xl leading-tight text-[#123629] md:text-4xl">
+              Help independent clinicians build practices that are visible, trusted, and easier to run.
+            </h2>
+            <p className="mt-5 leading-8 text-[#607169]">
+              Not by asking doctors to do more, but by helping the practice around them work better.
+            </p>
+          </article>
+          <article className="rounded-[2.2rem] bg-[#FBF8F1] p-7 md:p-10">
+            <p className="eyebrow">OUR VISION</p>
+            <h2 className="mt-5 text-3xl leading-tight text-[#123629] md:text-4xl">
+              Practice growth that feels as thoughtful as the care behind it.
+            </h2>
+            <p className="mt-5 leading-8 text-[#607169]">
+              A model where visibility, patient trust, operational clarity, and sustainable growth support clinical work instead of competing with it.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section className="section-wrap pt-0">
+        <div className="overflow-hidden rounded-[2.6rem] bg-[#123629] text-white">
+          <div className="grid lg:grid-cols-[.72fr_1.28fr]">
+            <div className="relative min-h-[360px] bg-[#DCE6E1] lg:min-h-[520px]">
+              <Image
+                src="/images/dr-wany-founder.jpg"
+                alt="Dr. Wany, Founder of Aleph"
+                fill
+                sizes="(max-width: 1024px) 100vw, 38vw"
+                className="object-cover"
+              />
             </div>
-            <Link className="button primary" href="/diagnostic">
-              Find my growth plan <ArrowUpRight size={18} />
-            </Link>
+            <div className="flex flex-col justify-center p-7 md:p-10 lg:p-14">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#C59A3D]">A NOTE FROM DR. WANY</p>
+              <blockquote className="mt-6 max-w-3xl text-3xl font-semibold leading-tight md:text-5xl md:leading-[1.08]">
+                “I did not build Aleph to make doctors better marketers. I built it to help doctors build better practices.”
+              </blockquote>
+              <div className="mt-8 border-t border-white/15 pt-6">
+                <p className="font-semibold">Dr. Wany</p>
+                <p className="mt-1 text-sm text-white/55">Founder, Aleph</p>
+              </div>
+              <div className="mt-9">
+                <Link href="/diagnostic" className="button bg-white text-[#123629] hover:bg-[#EDF4F1]">
+                  Find my growth plan <ArrowUpRight size={18} />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
