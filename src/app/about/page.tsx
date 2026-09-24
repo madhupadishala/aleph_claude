@@ -111,7 +111,7 @@ export default function AboutPage() {
 
             <div className="relative min-h-[520px] bg-[#EDF4F1] lg:min-h-full">
               <Image
-                src="/images/dr-wany-founder-4k.webp"
+                src="/images/dr-wany-founder-4k.avif"
                 alt="Dr. Wany, Founder of Aleph"
                 fill
                 priority
@@ -295,7 +295,7 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-[.72fr_1.28fr]">
             <div className="relative min-h-[360px] bg-[#DCE6E1] lg:min-h-[520px]">
               <Image
-                src="/images/dr-wany-founder-4k.webp"
+                src="/images/dr-wany-founder-4k.avif"
                 alt="Dr. Wany, Founder of Aleph"
                 fill
                 sizes="(max-width: 1024px) 100vw, 38vw"
