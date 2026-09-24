@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const partsDir = join(root, "src", "lib", "aleph", "final-founder-image");
-const output = join(root, "public", "images", "dr-wany-founder-4k.avif");
+const output = join(root, "public", "images", "dr-wany-founder-final.webp");
 
 const partNames = [
   "part0.b64",
@@ -24,20 +24,15 @@ const encoded = partNames
   .join("");
 
 const image = Buffer.from(encoded, "base64");
-if (image.length !== 65754 || !image.subarray(4, 12).toString("ascii").includes("ftyp")) {
-  throw new Error(`Founder image did not decode correctly (${image.length} bytes)`);
-}
 
-const ispe = image.indexOf(Buffer.from("ispe"));
-if (ispe < 0) {
-  throw new Error("Founder image is missing AVIF dimensions");
-}
-const width = image.readUInt32BE(ispe + 8);
-const height = image.readUInt32BE(ispe + 12);
-if (width !== 3840 || height !== 3840) {
-  throw new Error(`Founder image dimensions are ${width}x${height}, expected 3840x3840`);
+if (
+  image.length !== 87242 ||
+  image.subarray(0, 4).toString("ascii") !== "RIFF" ||
+  image.subarray(8, 12).toString("ascii") !== "WEBP"
+) {
+  throw new Error(`Founder image did not decode correctly (${image.length} bytes)`);
 }
 
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, image);
-console.log(`Prepared final Dr. Wany portrait (${width}x${height}, ${image.length} bytes)`);
+console.log("Prepared final Dr. Wany portrait (1254x1254 WebP, 87242 bytes)");
