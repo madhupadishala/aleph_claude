@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowDown,
@@ -109,10 +110,14 @@ export default function AboutPage() {
             </div>
 
             <div className="relative min-h-[520px] bg-[#EDF4F1] lg:min-h-full">
-              <img
+              <Image
                 src="/images/dr-wany-founder-final.webp"
                 alt="Dr. Wany, Founder of Aleph"
-                className="absolute inset-0 h-full w-full object-cover"
+                fill
+                priority
+                unoptimized
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
               />
               <div className="absolute inset-x-5 bottom-5 rounded-[1.6rem] border border-white/70 bg-white/90 p-5 shadow-[0_18px_60px_rgba(18,54,41,.18)] backdrop-blur md:inset-x-7 md:bottom-7 md:p-6">
                 <p className="text-lg font-semibold text-[#123629]">Dr. Wany</p>
@@ -290,11 +295,13 @@ export default function AboutPage() {
         <div className="overflow-hidden rounded-[2.6rem] bg-[#123629] text-white">
           <div className="grid lg:grid-cols-[.72fr_1.28fr]">
             <div className="relative min-h-[360px] bg-[#DCE6E1] lg:min-h-[520px]">
-              <img
+              <Image
                 src="/images/dr-wany-founder-final.webp"
                 alt="Dr. Wany, Founder of Aleph"
-                className="absolute inset-0 h-full w-full object-cover"
-                loading="lazy"
+                fill
+                unoptimized
+                sizes="(max-width: 1024px) 100vw, 38vw"
+                className="object-cover"
               />
             </div>
             <div className="flex flex-col justify-center p-7 md:p-10 lg:p-14">
