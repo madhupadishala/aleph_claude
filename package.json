@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prepare:founder-image": "node scripts/materialize-founder-image.mjs",
+    "predev": "npm run prepare:founder-image",
     "dev": "next dev",
+    "prebuild": "npm run prepare:founder-image",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint src --max-warnings=0",
+    "lint": "eslint src --max-warnings=0 --ignore-pattern 'src/lib/aleph/founder-image/part*.ts'",
     "test": "tsc src/lib/admin/session.ts --outDir .test-build --module commonjs --target es2020 --esModuleInterop --skipLibCheck && node --import tsx --test tests/*.test.cjs tests/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
