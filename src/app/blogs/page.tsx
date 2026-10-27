@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { PageIntro } from "@/components/PageIntro";
 import { blogPosts } from "@/lib/aleph/blogs";
+import { listPublishedBlogs } from "@/lib/cms/content";
 
 export const metadata = {
   title: "Practice Notes",
@@ -10,7 +11,9 @@ export const metadata = {
   alternates: { canonical: "/blogs" },
 };
 
-export default function BlogsPage() {
+export default async function BlogsPage() {
+  const cmsPosts = await listPublishedBlogs();
+  const allPosts = [...cmsPosts.map(p => ({slug:p.slug,title:p.title,excerpt:p.summary,category:"Practice Notes",published:new Date(p.published_at || p.updated_at).toLocaleDateString("en-IN"),readTime:Math.max(1,Math.ceil(p.body.split(/\s+/).length/200))+" min read"})),...blogPosts.filter(p=>!cmsPosts.some(c=>c.slug===p.slug))];
   return (
     <main className="page-wrap">
       <PageIntro
@@ -23,7 +26,7 @@ export default function BlogsPage() {
 
       <section className="section-wrap">
         <div className="grid gap-6 lg:grid-cols-3">
-          {blogPosts.map((post, index) => (
+          {allPosts.map((post, index) => (
             <article
               key={post.slug}
               className="flex min-h-[360px] flex-col rounded-[2rem] border border-[#DCE6E1] bg-white p-7 md:p-8"
