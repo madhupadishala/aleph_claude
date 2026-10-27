@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { blogPosts, getBlogPost } from "@/lib/aleph/blogs";
+import { getPublished } from "@/lib/cms/content";
 
 export function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
@@ -14,6 +15,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const cms = await getPublished("blog",slug);
+  if(cms) return {title:cms.title,description:cms.summary,alternates:{canonical:`/blogs/${slug}`}};
   const post = getBlogPost(slug);
   if (!post) return {};
   return {
@@ -29,7 +32,10 @@ export default async function BlogArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const cms = await getPublished("blog",slug);
   const post = getBlogPost(slug);
+  if (!cms && !post) notFound();
+  if (cms) return <main className="page-wrap"><article className="mx-auto max-w-4xl px-5 py-14"><Link href="/blogs" className="text-link">← Back to Practice Notes</Link><header className="mt-8 border-b pb-8"><h1 className="text-4xl font-semibold">{cms.title}</h1><p className="mt-4 text-lg">{cms.summary}</p></header><div className="mt-8 space-y-5">{cms.body.split(/\\n\\s*\\n/).map((paragraph,index)=><p className="leading-8" key={index}>{paragraph}</p>)}</div></article></main>;
   if (!post) notFound();
 
   return (

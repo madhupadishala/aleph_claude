@@ -1,3 +1,4 @@
+import { getPublished } from "@/lib/cms/content";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -42,7 +43,8 @@ const packageLabels: Record<string, string> = {
   "Aleph Concierge": "BESPOKE SUPPORT",
 };
 
-export default function Home() {
+export default async function Home() {
+  const cmsHome = await getPublished("page","home");
   return (
     <main>
       <section className="home-hero">
@@ -59,15 +61,10 @@ export default function Home() {
             <span className="status-dot" /> FOR THE INDEPENDENT CLINICIAN
           </p>
           <h1>
-            Aleph.
-            <br />
-            Your practice,
-            <br />
-            <em>with possibility.</em>
+            {cmsHome?.title || <>Aleph.<br />Your practice,<br /><em>with possibility.</em></>}
           </h1>
           <p>
-            You built the skill to care for people. Build the visibility, trust,
-            and confidence to grow your own practice.
+            {cmsHome?.summary || "You built the skill to care for people. Build the visibility, trust, and confidence to grow your own practice."}
           </p>
           <Link href="/diagnostic" className="button primary">
             Find my growth plan <ArrowUpRight size={18} />

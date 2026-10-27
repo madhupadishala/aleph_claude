@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.push("/admin/leads");
+      router.push("/admin/content");
       router.refresh();
     } catch {
       setError("Connection interrupted. Please try again.");
@@ -49,7 +49,7 @@ export default function AdminLoginPage() {
           <h1 className="font-serif text-5xl">Aleph Admin</h1>
         </div>
         <p className="mt-4 leading-7 text-forest/70">
-          Enter the admin password configured in Vercel.
+          Enter the site administration password.
         </p>
         <label
           htmlFor="admin-password"
@@ -75,7 +75,7 @@ export default function AdminLoginPage() {
           disabled={saving}
           className="mt-6 min-h-12 w-full rounded-full bg-forest px-5 font-black text-white disabled:opacity-60"
         >
-          {saving ? "Checking..." : "Unlock Leads"}
+          {saving ? "Checking..." : "Sign in to CMS"}
         </button>
       </form>
     </main>
